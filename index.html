@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Internship Tracker — Deloitte M&A</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E2C87A;
+    --gold-dim: rgba(201,168,76,0.15);
+    --gold-border: rgba(201,168,76,0.3);
+    --bg: #0A0A0A;
+    --bg-card: #111111;
+    --bg-row: #141414;
+    --bg-hover: #1A1A1A;
+    --text: #E8E2D6;
+    --text-muted: #6B6560;
+    --text-dim: #3A3530;
+    --border: rgba(255,255,255,0.06);
+    --border-strong: rgba(255,255,255,0.12);
+    --accent-teal: #3AAFA9;
+    --accent-coral: #C4614A;
+    --font-display: 'Playfair Display', Georgia, serif;
+    --font-mono: 'DM Mono', monospace;
+    --font-sans: 'DM Sans', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 3rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+  .header-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+  }
+  .header-title {
+    font-family: var(--font-display);
+    font-size: 2.2rem;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+  .header-title span { color: var(--gold); }
+  .header-sub {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 0.4rem;
+    font-weight: 300;
+  }
+  .header-meta {
+    position: absolute;
+    top: 2.5rem; right: 3rem;
+    text-align: right;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.8;
+  }
+  .header-meta strong { color: var(--gold); font-weight: 400; }
+
+  /* ── Stats Row ── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .stat-cell {
+    background: var(--bg);
+    padding: 1.4rem 2rem;
+    position: relative;
+  }
+  .stat-cell::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 2rem; right: 2rem; height: 1px;
+    background: var(--gold-dim);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .stat-cell:hover::after { opacity: 1; }
+  .stat-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 0.4rem;
+  }
+  .stat-value {
+    font-family: var(--font-display);
+    font-size: 1.9rem;
+    font-weight: 400;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .stat-sub {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+    font-weight: 300;
+  }
+
+  /* ── Main layout ── */
+  .main { padding: 2rem 3rem; }
+
+  /* ── Controls ── */
+  .controls {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .search-wrap {
+    flex: 1;
+    min-width: 220px;
+    position: relative;
+  }
+  .search-wrap input {
+    width: 100%;
+    background: var(--bg-card);
+    border: 1px solid var(--border-strong);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 0.6rem 1rem 0.6rem 2.4rem;
+    border-radius: 2px;
+    outline: none;
+    transition: border-color 0.2s;
+    letter-spacing: 0.02em;
+  }
+  .search-wrap input:focus { border-color: var(--gold-border); }
+  .search-wrap input::placeholder { color: var(--text-muted); }
+  .search-icon {
+    position: absolute;
+    left: 0.8rem; top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 12px;
+    pointer-events: none;
+  }
+  select {
+    background: var(--bg-card);
+    border: 1px solid var(--border-strong);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    padding: 0.6rem 2rem 0.6rem 0.9rem;
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236B6560'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.7rem center;
+    letter-spacing: 0.02em;
+    transition: border-color 0.2s;
+  }
+  select:focus { border-color: var(--gold-border); }
+  .view-toggle { display: flex; gap: 4px; }
+  .view-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border-strong);
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 0.55rem 0.9rem;
+    border-radius: 2px;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: all 0.2s;
+  }
+  .view-btn.active {
+    background: var(--gold-dim);
+    border-color: var(--gold-border);
+    color: var(--gold);
+  }
+  .results-info {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+    padding: 0 0.5rem;
+    white-space: nowrap;
+    align-self: center;
+  }
+
+  /* ── Table ── */
+  #table-view { display: block; }
+  #timeline-view { display: none; }
+
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  thead tr {
+    border-bottom: 1px solid var(--gold-border);
+  }
+  th {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    padding: 0.7rem 1rem;
+    text-align: left;
+    font-weight: 400;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+  }
+  th:hover { color: var(--gold-light); }
+  th.sorted::after { content: ' ↓'; opacity: 0.6; }
+  th.sorted.asc::after { content: ' ↑'; }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+    cursor: default;
+  }
+  tbody tr:hover { background: var(--bg-hover); }
+  td {
+    padding: 0.85rem 1rem;
+    vertical-align: top;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  td.date {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    letter-spacing: 0.04em;
+  }
+  td.task { font-weight: 400; color: var(--text); max-width: 200px; }
+  td.team {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    max-width: 180px;
+    letter-spacing: 0.02em;
+  }
+  td.desc { color: #9A948E; max-width: 280px; font-size: 12px; }
+  td.learning { color: #7A8FAA; max-width: 280px; font-size: 12px; font-style: italic; }
+
+  .tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 1px;
+    border: 1px solid;
+    margin-bottom: 3px;
+    white-space: nowrap;
+  }
+  .tag-val { color: var(--gold); border-color: var(--gold-border); background: var(--gold-dim); }
+  .tag-model { color: var(--accent-teal); border-color: rgba(58,175,169,0.3); background: rgba(58,175,169,0.08); }
+  .tag-research { color: #9E7ABF; border-color: rgba(158,122,191,0.3); background: rgba(158,122,191,0.08); }
+  .tag-deal { color: var(--accent-coral); border-color: rgba(196,97,74,0.3); background: rgba(196,97,74,0.08); }
+  .tag-admin { color: var(--text-muted); border-color: var(--border-strong); background: transparent; }
+
+  /* ── Timeline View ── */
+  .timeline { position: relative; padding: 1rem 0; }
+  .tl-month { margin-bottom: 2.5rem; }
+  .tl-month-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.2rem;
+  }
+  .tl-month-label {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--gold);
+  }
+  .tl-month-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .tl-month-count {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.1em;
+  }
+  .tl-entries { display: flex; flex-direction: column; gap: 8px; }
+  .tl-entry {
+    display: grid;
+    grid-template-columns: 110px 140px 1fr 1fr auto;
+    gap: 1rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-left: 2px solid transparent;
+    padding: 0.85rem 1.2rem;
+    border-radius: 2px;
+    transition: all 0.2s;
+    align-items: start;
+  }
+  .tl-entry:hover {
+    border-color: var(--border-strong);
+    border-left-color: var(--gold);
+    background: var(--bg-hover);
+  }
+  .tl-date {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+    padding-top: 2px;
+  }
+  .tl-task { font-weight: 400; color: var(--text); font-size: 13px; }
+  .tl-team {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.02em;
+  }
+  .tl-desc { font-size: 12px; color: #9A948E; }
+  .tl-learning { font-size: 12px; color: #7A8FAA; font-style: italic; }
+
+  /* ── Empty state ── */
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-muted);
+  }
+  .empty-state .icon { font-size: 2rem; margin-bottom: 1rem; opacity: 0.3; }
+  .empty-state p { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.1em; }
+
+  /* ── Footer ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 1.5rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+  }
+  footer .left {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+  }
+  footer .right {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--text-dim); border-radius: 2px; }
+
+  @media (max-width: 900px) {
+    header { padding: 1.5rem; }
+    .header-meta { display: none; }
+    .stats-row { grid-template-columns: repeat(3, 1fr); }
+    .main { padding: 1.5rem; }
+    .tl-entry { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-eyebrow">Deal Advisory · Corporate Finance</div>
+  <h1 class="header-title">Deloitte M&A <span>Traineeship Log</span></h1>
+  <p class="header-sub">Supervised by Anuj Bansal & Rahul Soni · Oct 2025 – Mar 2026</p>
+  <div class="header-meta">
+    <div><strong>Firm</strong> Deloitte India</div>
+    <div><strong>Practice</strong> Corporate Finance – M&A</div>
+    <div><strong>Period</strong> Oct 2025 – Mar 2026</div>
+  </div>
+</header>
+
+<div class="stats-row" id="stats-row">
+  <!-- filled by JS -->
+</div>
+
+<div class="main">
+  <div class="controls">
+    <div class="search-wrap">
+      <span class="search-icon">⌕</span>
+      <input type="text" id="search" placeholder="Search tasks, projects, teams…">
+    </div>
+    <select id="filter-month">
+      <option value="">All months</option>
+    </select>
+    <select id="filter-team">
+      <option value="">All team members</option>
+    </select>
+    <select id="filter-type">
+      <option value="">All types</option>
+      <option value="Valuation">Valuation</option>
+      <option value="Research">Research</option>
+      <option value="Deal Execution">Deal Execution</option>
+      <option value="Modelling">Modelling</option>
+      <option value="Admin">Admin / OPE</option>
+    </select>
+    <div class="view-toggle">
+      <button class="view-btn active" onclick="setView('table')">Table</button>
+      <button class="view-btn" onclick="setView('timeline')">Timeline</button>
+    </div>
+    <span class="results-info" id="results-info"></span>
+  </div>
+
+  <div id="table-view">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortBy('date')">Date</th>
+            <th onclick="sortBy('task')">Task / Work Done</th>
+            <th onclick="sortBy('team')">Team</th>
+            <th>Description</th>
+            <th>Key Learnings</th>
+            <th>Type</th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="timeline-view">
+    <div class="timeline" id="timeline-body"></div>
+  </div>
+</div>
+
+<footer>
+  <div class="left">CONFIDENTIAL · INTERNSHIP WORK LOG · SHAURYA</div>
+  <div class="right" id="footer-range"></div>
+</footer>
+
+<script>
+const raw = [
+  { date:"06 Oct 2025", task:"Research platform acclimatisation", team:"Sameep Aggarwal, Shivani Ma'am", desc:"Learned EMIS, EIU, Factiva, LSEG, Hoovers, Gartner, IDC, Verdantix, Mergermarket, and KX Toolkit for deal research.", learning:"Understood use of structured data, macro insights, news intelligence, and company profiling for M&A work.", type:"Research" },
+  { date:"07 Oct 2025", task:"Industry research — Lenskart DRHP", team:"Shivani Ma'am", desc:"Mapped Indian eyewear sector, product portfolios, brands, pricing tiers, and competitive landscape.", learning:"Improved market scoping, DRHP analysis, competitor mapping, and leadership validation skills.", type:"Research" },
+  { date:"08 Oct 2025", task:"Company profiling — HISYS & leadership mapping (RMG sector)", team:"Arpit Agrawal, Shivani Ma'am, Samiha Ma'am", desc:"Built partner list for HISYS India, validated operations data, and mapped leadership teams for gaming companies.", learning:"Learned structured partner screening, LinkedIn validation, and how leadership mapping supports deal sourcing.", type:"Research" },
+  { date:"09 Oct 2025", task:"BLS Visa investor deck & sustainability research", team:"Sahil Jawa", desc:"Assisted investor materials & researched sustainability sector players, market trends & opportunities.", learning:"Strengthened investor communication and sector analysis capability.", type:"Research" },
+  { date:"10 Oct 2025", task:"Meiji investment thesis & Neemrana Wyndham presentation", team:"Arpit Agrawal, Rahul Soni", desc:"Built hospitality sector insights, developed investment rationale, created presentation materials.", learning:"Learned investment thesis building, hospitality sector metrics, and structured research discipline.", type:"Valuation" },
+  { date:"11 Oct 2025", task:"BLS discussion doc; CCM auto-comp list", team:"Sahil Jawa, Arpit Agrawal", desc:"Helped refine BLS discussion doc; built new comparable players list for automotive CCM.", learning:"Learned valuation comps, peer selection, and investor-ready communication.", type:"Valuation" },
+  { date:"13 Oct 2025", task:"Construction sector deep dive", team:"Shivek Sir", desc:"Researched cement, PVC, wood laminates, engineered wood, mats, building materials value chain.", learning:"Gained sector-wide understanding and methodical deep-dive skills.", type:"Research" },
+  { date:"14 Oct 2025", task:"RMX Hoses — teaser preparation", team:"Sahil Garg", desc:"Assisted with company research, positioning, and structuring a polished M&A teaser.", learning:"Learned teaser formatting and value proposition articulation.", type:"Deal Execution" },
+  { date:"15 Oct 2025", task:"Cement sector deep dive", team:"Shivek Sir", desc:"Analysed cement players, clinker capacity, margins, pricing cycles, regional demand.", learning:"Understood sector economics, valuation drivers, and cyclical indicators.", type:"Research" },
+  { date:"16–21 Oct 2025", task:"Movetech Motors — business plan; CCM, CTM & WACC", team:"Arpit Agrawal", desc:"Built business plan assumptions, comps sets, transaction comps, and WACC model.", learning:"Improved modelling, comps benchmarking and discount rate evaluation.", type:"Modelling" },
+  { date:"23–28 Oct 2025", task:"Beri Udyog — multi-year sales register analysis (FY20–25)", team:"Shivek Sir", desc:"Cleaned and analysed FY20–21 to FY24–25 registers, mapped product mix, regions, customers.", learning:"Learned multi-year revenue diagnostics and foundational valuation inputs.", type:"Modelling" },
+  { date:"29 Oct 2025", task:"Movetech Conveyors — CCM", team:"Arpit Agrawal", desc:"Identified new comparable players in conveyors/material handling sectors.", learning:"Strengthened peer screening & valuation comparability assessment.", type:"Valuation" },
+  { date:"30 Oct – 3 Nov 2025", task:"Project Orion — Business Plan initiation", team:"Shivek Sir", desc:"Developed business plan structure, financial assumptions, cost drivers & market logic.", learning:"Learned how to initiate business plan frameworks from zero base.", type:"Modelling" },
+  { date:"03 Nov 2025", task:"Aludec — financial analysis", team:"Arpit Agrawal", desc:"Reviewed financial statements & revenue/margin benchmarking for Aludec.", learning:"Improved financial analysis & benchmarking skills.", type:"Valuation" },
+  { date:"05 Nov 2025", task:"Project Orion — Beri business plan", team:"Shivek Sir", desc:"Analysed Beri's sales, products, sector positioning for business plan creation.", learning:"Learned to integrate historicals into business-plan assumptions.", type:"Modelling" },
+  { date:"06 Nov 2025", task:"FMC Corporation — credit work", team:"Rahul Soni, Shivek Sir", desc:"Reviewed financials & credit metrics for FMC (company), and general credit evaluations.", learning:"Understood credit assessment, working capital cycles, risk indicators.", type:"Valuation" },
+  { date:"07 Nov 2025", task:"RMX — strategic suitor list & outreach messaging", team:"Rahul Soni", desc:"Built strategic suitor map & drafted email outreach for teaser circulation.", learning:"Learned buyer universe mapping and investor outreach communication.", type:"Deal Execution" },
+  { date:"10 Nov 2025", task:"Beri — master sales register", team:"Shivek Sir", desc:"Consolidated all FY datasets into one master cleaned register for modelling.", learning:"Strengthened data cleaning & harmonisation for modelling.", type:"Modelling" },
+  { date:"11 Nov 2025", task:"Beri — master sales analysis report", team:"Shivek Sir", desc:"Built complete multi-year analytics on product mix, regions, growth, pricing.", learning:"Learned revenue diagnostics & IM-support analytics.", type:"Modelling" },
+  { date:"12–19 Nov 2025", task:"Dhanuka Agritech — business plan; agrochemical analysis; beta, WACC & multiples", team:"Rahul Soni, Shivek Sir", desc:"Full sector deep dive, peer study including FMC, built assumptions, comps, betas, WACC & valuation benchmarks.", learning:"Gained strong valuation foundation & sector expertise.", type:"Modelling" },
+  { date:"14 Nov 2025", task:"Project Drive — projection sheet", team:"Sahil Jawa, Gaurav Sir", desc:"Created projection sheet structure and validated assumptions.", learning:"Strengthened modelling clarity and assumption building.", type:"Modelling" },
+  { date:"15 Nov 2025", task:"Project Drive — customer PO & agreement review", team:"Gaurav Sir, Sahil Jawa", desc:"Extracted key terms, pricing, commitments from customer POs.", learning:"Learned commercial diligence & how contracts feed into modelling.", type:"Deal Execution" },
+  { date:"20 Nov 2025", task:"Project Dhanush — merger projections (Dhanuka + RMC)", team:"Rahul Soni, Shivek Sir", desc:"Built merger assumptions, synergy drivers, early revenue/cost logic.", learning:"Understood consolidation modelling & merger synergy mapping.", type:"Modelling" },
+  { date:"21 Nov 2025", task:"Project Orion — teaser updates", team:"Shivek Sir, Sahil Jawa", desc:"Updated teaser narrative based on new financials, product mix, highlights.", learning:"Learned iterative teaser refinement process.", type:"Deal Execution" },
+  { date:"24 Nov 2025", task:"Rebuilt Orion sales master (client feedback)", team:"Shivek Sir", desc:"Updated sales register mappings, categories, regions using revised client inputs.", learning:"Understood client-driven dataset refinement.", type:"Modelling" },
+  { date:"25 Nov 2025", task:"Final refinements — Orion sales master", team:"Shivek Sir", desc:"Ensured full alignment between sales data & projections.", learning:"Improved consistency checks & cross-data validation skills.", type:"Modelling" },
+  { date:"26–27 Nov 2025", task:"RMX Hoses — IM preparation", team:"Husain Mahin", desc:"Drafted IM sections; built exhibits, charts, and buyer-facing narrative.", learning:"Learned IM structuring & investment narrative building.", type:"Deal Execution" },
+  { date:"28 Nov 2025", task:"Project Orion — teaser refresh", team:"Shivek Sir", desc:"Integrated revised financials & sales trends into teaser refresh.", learning:"Enhanced understanding of connecting financials to messaging.", type:"Deal Execution" },
+  { date:"01 Dec 2025", task:"Project Orion — business plan work", team:"Sahil Jawa, Shivek Sir", desc:"Began business plan structure, assumptions, sector benchmarks.", learning:"Learned BP initiation, narrative + financial alignment.", type:"Modelling" },
+  { date:"2–3 Dec 2025", task:"Project Orion — projections", team:"Shivek Sir, Sahil Jawa", desc:"Built revenue, cost, margin, manpower, WC blocks for projections.", learning:"Strengthened projections modelling & data reconciliation.", type:"Modelling" },
+  { date:"04 Dec 2025", task:"Project Orion — teaser revision (Rahul Sir's comments)", team:"Rahul Soni, Shivek Sir", desc:"Updated messaging, visuals, and financial exhibits.", learning:"Learned senior-level refinement standards.", type:"Deal Execution" },
+  { date:"5 & 8 Dec 2025", task:"Shinizu — strategic suitor list + outreach", team:"Husain Mahin, Gaurav Srivastava", desc:"Built JV suitor list & initiated first-touch outreach calls.", learning:"Learned synergy mapping & JV outreach communication.", type:"Deal Execution" },
+  { date:"9–11 Dec 2025", task:"Project Dhanush — merger projections & presentation", team:"Rahul Soni, Shivek Sir, Sahil Jawa", desc:"Worked on merged projections for Dhanuka + RMC; built deck exhibits.", learning:"Gained experience in merger modelling and steering committee presentation.", type:"Modelling" },
+  { date:"12–13 Dec 2025", task:"Aerospace industry analysis", team:"Arpit Agrawal", desc:"Conducted aerospace industry analysis focusing on comparable company identification and segment scoping.", learning:"Developed understanding of industry structure, peer benchmarking, and segment-level evaluation.", type:"Research" },
+  { date:"13–16 Dec 2025", task:"ASP Fieldking — projections", team:"Shivek Sir, Sahil Jawa", desc:"Prepared business projections for ASP Fieldking, including revenue growth assumptions and financial forecasting.", learning:"Gained experience in business projection modeling, assumption building, and financial forecasting.", type:"Modelling" },
+  { date:"15–19 Dec 2025", task:"Project Orion & FMC — DAL support", team:"Rahul Soni, Shivek Sir, Sahil Jawa", desc:"Supported Project Orion business plan preparation and maintained the FMC DAL Q&A tracker.", learning:"Learned business plan support, stakeholder coordination, and structured Q&A management.", type:"Deal Execution" },
+  { date:"19–22 Dec 2025", task:"Aerospace research — drone segment", team:"Arpit Agrawal", desc:"Refined aerospace industry research, with deeper scoping of drone segment companies in the Indian market.", learning:"Gained insights into India's drone ecosystem, key players, and segment-specific analysis.", type:"Research" },
+  { date:"08 Jan 2026", task:"Project Hose — OPE sheet preparation", team:"Rahul Soni", desc:"Worked on OPE sheet preparation for Project Hose to be charged to the client, ensuring accurate cost allocation.", learning:"Learned OPE structuring, client chargeability norms, and validation processes.", type:"Admin" },
+  { date:"09 Jan 2026", task:"Project Alchemy — OPE sheet", team:"Rahul Soni", desc:"Prepared OPE sheet for Project Alchemy to be charged on client, aligned with project scope.", learning:"Gained understanding of project-wise expense mapping and client billing processes.", type:"Admin" },
+  { date:"10 Jan 2026", task:"Project OCHA — OPE sheet", team:"Rahul Soni", desc:"Worked on OCHA OPE sheet to be charged to client, including expense review and reconciliation.", learning:"Strengthened knowledge of OPE reconciliation.", type:"Admin" },
+  { date:"15 Jan 2026", task:"Aerospace research — drone segment (sub-₹1Bn players)", team:"Arpit Agrawal", desc:"Further refined aerospace industry research by scoping companies with annual revenue under INR 1 billion.", learning:"Gained deeper insight into early-stage and mid-size aerospace players, revenue-based filtering.", type:"Research" },
+  { date:"19–21 Jan 2026", task:"Project Scholar — CCM, CTM & industry scoping", team:"Rahul Soni, Sahil Jawa", desc:"Worked on comparables, CTM, company snapshot, industry scoping.", learning:"Gained experience in company snapshot and scoping requests.", type:"Valuation" },
+  { date:"20 Jan 2026", task:"Sonalika — CCM & CTM analysis", team:"Sahil Jawa", desc:"Worked on CCM and CTM analysis for Sonalika, compiling valuation and transaction multiples.", learning:"Strengthened understanding of trading and transaction multiple analysis.", type:"Valuation" },
+  { date:"22 Jan 2026", task:"Estimated closing statement", team:"Sahil Jawa", desc:"Prepared and reviewed the Estimated Closing Statement for deal execution.", learning:"Learned key components of transaction closing statements.", type:"Deal Execution" },
+  { date:"23 Jan 2026", task:"TGEPL — inter-sheet workings & balance sheet review", team:"Sahil Jawa", desc:"Worked on TFI inter-sheet workings and reviewed the balance sheet for TGEPL.", learning:"Improved skills in inter-sheet reconciliation and financial validation.", type:"Modelling" },
+  { date:"28 Jan 2026", task:"Project Lotus — information request & MEDICALIM data review", team:"Sahil Jawa", desc:"Assisted in information request preparation and reviewed MEDICALIM LNP data (FY23–FY25).", learning:"Gained exposure to data request management and multi-year financial review.", type:"Deal Execution" },
+  { date:"29 Jan 2026", task:"Sumtimo & Rallis India — financial research & investor quarterly update", team:"Shivek Sir", desc:"Researched Sumtimo and Rallis India for financials and updated investor quarterly report.", learning:"Gained experience in financial research, peer company analysis, and investor reporting updates.", type:"Research" },
+  { date:"30 Jan 2026", task:"Project Lotus — action step tracking", team:"Sahil Jawa", desc:"Worked on defining and tracking action steps for Project Lotus.", learning:"Learned task tracking, coordination, and execution planning.", type:"Deal Execution" },
+  { date:"02 Feb 2026", task:"Project Orion — teaser version 2", team:"Aviral Aggarwal", desc:"Worked on Project Orion Teaser – Version 2, refining content and key highlights.", learning:"Learned how to refine investment teasers based on feedback.", type:"Deal Execution" },
+  { date:"02 Feb 2026", task:"Project DAL — acquisition financing analysis", team:"Aviral Aggarwal", desc:"Supported acquisition financing analysis for the Dhanush transaction.", learning:"Gained exposure to acquisition financing structures.", type:"Valuation" },
+  { date:"03 Feb 2026", task:"TGEPL — fixed assets register", team:"Sahil Jawa", desc:"Prepared the Fixed Assets Register for TGEPL.", learning:"Developed understanding of fixed asset accounting and register maintenance.", type:"Deal Execution" },
+  { date:"03 Feb 2026", task:"Project Fly — operating model analysis", team:"Aviral Aggarwal", desc:"Conducted operating model analysis focusing on key business drivers.", learning:"Improved understanding of operating model frameworks.", type:"Modelling" },
+  { date:"05 Feb 2026", task:"Project DAL — Dhanush steering committee agenda", team:"Aviral Aggarwal", desc:"Prepared the proposed agenda for the Dhanush Steering Committee.", learning:"Learned agenda structuring for senior stakeholder meetings.", type:"Deal Execution" },
+  { date:"24 Feb 2026", task:"Project DAL — Dhanuka CCM update", team:"Aviral Aggarwal", desc:"Updated Dhanuka CCM with revised data as of 24 Feb 2026.", learning:"Strengthened skills in CCM updates and version control.", type:"Valuation" },
+  { date:"24 Feb 2026", task:"Valuation analysis — beta calculation", team:"Aviral Aggarwal", desc:"Performed beta calculation for valuation purposes.", learning:"Reinforced understanding of beta estimation in valuation.", type:"Valuation" },
+  { date:"06 Mar 2026", task:"EMS industry research", team:"Arpit Agrawal", desc:"Conducted scoping of EMS players, identifying key companies and market segments.", learning:"Gained understanding of the EMS industry landscape, player categorization, and peer shortlisting.", type:"Research" },
+  { date:"09 Mar 2026", task:"Project Minda — automotive OEM scoping", team:"Husain Mahin, Gaurav Srivastava", desc:"Scoped automotive OEM companies relevant to Project Minda, identifying key players and segment coverage.", learning:"Gained understanding of the automotive OEM landscape, player categorization, and OEM mapping.", type:"Research" },
+  { date:"10 Mar 2026", task:"Project Orion — Fieldking industry scoping", team:"Aviral Aggarwal", desc:"Conducted industry scoping for Fieldking, mapping market structure and peers.", learning:"Gained insights into industry analysis and peer benchmarking.", type:"Research" },
+  { date:"13 Mar 2026", task:"Project Archie — potential suitors presentation", team:"Arpit Agrawal", desc:"Prepared a Potential Suitors presentation, identifying and profiling relevant strategic and financial buyers.", learning:"Gained experience in buyer identification, strategic fit analysis, and presentation structuring.", type:"Deal Execution" },
+  { date:"16 Mar 2026", task:"KNest — company profile & scoping", team:"Aviral Aggarwal", desc:"Prepared KNest company profile and conducted company scoping, covering business model, positioning, and relevant peer landscape.", learning:"Gained experience in company profiling, business scoping, and structuring information for strategic analysis.", type:"Research" },
+  { date:"17 Mar 2026", task:"Project Alchemy — inventory details sheet cleaning", team:"Sahil Jawa", desc:"Cleaned and validated the inventory details sheet for Project Alchemy, ensuring accuracy and consistency of data.", learning:"Improved skills in inventory data cleaning, cross-verification, and supporting financial analysis with clean datasets.", type:"Deal Execution" },
+  { date:"19 Mar 2026", task:"Beri Udyog — HH competitor financial analysis", team:"Aviral Aggarwal", desc:"Worked on financial analysis of HH competitors for Beri Udyog, compiling and reviewing competitor financials for benchmarking.", learning:"Gained experience in competitor financial analysis, benchmarking, and competitive assessment.", type:"Valuation" },
+  { date:"20–23 Mar 2026", task:"Project Archie — DCF model & case study", team:"Aviral Aggarwal", desc:"Worked on DCF model preparation for Project Archie and supported development of the case study, including assumptions, valuation outputs, and analysis.", learning:"Gained hands-on experience in DCF valuation modeling, assumption building, and structuring investment case studies.", type:"Modelling" },
+  { date:"24 Mar 2026", task:"Shimizu — company profiles", team:"Gaurav Srivastava", desc:"Prepared company profiles for Shimizu, covering business overview, operations, and relevant market positioning.", learning:"Gained experience in company profiling, structured research, and presenting concise business information.", type:"Research" },
+  { date:"25 Mar 2026", task:"Bull India Agro — industry & company scoping", team:"Rahul Soni", desc:"Conducted industry and company scoping for Bull India Agro, identifying relevant players and market segments.", learning:"Gained understanding of agri-sector company scoping, peer identification, and supporting strategic analysis.", type:"Research" },
+  { date:"26 Mar 2026", task:"Project Motor — OPE preparation", team:"Gaurav Srivastava", desc:"Worked on OPE preparation for Project Motor to be charged to the client, ensuring accuracy and correct classification of expenses.", learning:"Gained experience in OPE preparation, expense validation, and understanding client chargeability norms.", type:"Admin" },
+  { date:"27 Mar 2026", task:"Project Alchemy — final closing OPE", team:"Rahul Soni", desc:"Supported final closing OPE for Project Alchemy, assisting in review and finalization prior to closure.", learning:"Learned about final OPE closure processes, reconciliation, and documentation required at deal close stage.", type:"Admin" }
+];
+
+// tag class map
+const typeClass = { "Valuation":"tag-val", "Modelling":"tag-model", "Research":"tag-research", "Deal Execution":"tag-deal", "Admin":"tag-admin" };
+
+// parse month key
+function monthKey(dateStr) {
+  const months = {Jan:1,Feb:2,Mar:3,Apr:4,May:5,Jun:6,Jul:7,Aug:8,Sep:9,Oct:10,Nov:11,Dec:12};
+  const parts = dateStr.replace(/[–—]/g,'-').trim().split(/\s+/);
+  // Try to find a month in parts
+  for (let p of parts) {
+    const m = months[p.slice(0,3)];
+    if (m) {
+      const yr = parts.find(x => /^\d{4}$/.test(x));
+      return `${yr}-${String(m).padStart(2,'0')}`;
+    }
+  }
+  return '0000-00';
+}
+function monthLabel(key) {
+  const [yr, m] = key.split('-');
+  const names = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${names[+m]} ${yr}`;
+}
+
+// Enrich data with month keys
+raw.forEach(d => { d.monthKey = monthKey(d.date); });
+
+// Populate filter dropdowns
+function populateFilters() {
+  const months = [...new Set(raw.map(d => d.monthKey))].sort();
+  const sel = document.getElementById('filter-month');
+  months.forEach(mk => {
+    const opt = document.createElement('option');
+    opt.value = mk; opt.textContent = monthLabel(mk);
+    sel.appendChild(opt);
+  });
+
+  const teams = new Set();
+  raw.forEach(d => d.team.split(',').forEach(t => teams.add(t.trim())));
+  const tsel = document.getElementById('filter-team');
+  [...teams].sort().forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t; opt.textContent = t;
+    tsel.appendChild(opt);
+  });
+}
+
+// Stats
+function renderStats(data) {
+  const types = {};
+  const allTeams = new Set();
+  data.forEach(d => {
+    types[d.type] = (types[d.type]||0)+1;
+    d.team.split(',').forEach(t => allTeams.add(t.trim()));
+  });
+  const topType = Object.entries(types).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('stats-row').innerHTML = `
+    <div class="stat-cell"><div class="stat-label">Total Entries</div><div class="stat-value">${data.length}</div><div class="stat-sub">Work sessions logged</div></div>
+    <div class="stat-cell"><div class="stat-label">Months Active</div><div class="stat-value">${new Set(data.map(d=>d.monthKey)).size}</div><div class="stat-sub">Oct 2025 – Mar 2026</div></div>
+    <div class="stat-cell"><div class="stat-label">Collaborators</div><div class="stat-value">${allTeams.size}</div><div class="stat-sub">Unique team members</div></div>
+    <div class="stat-cell"><div class="stat-label">Primary Focus</div><div class="stat-value" style="font-size:1.2rem;padding-top:4px">${topType ? topType[0] : '—'}</div><div class="stat-sub">${topType ? topType[1]+' tasks' : ''}</div></div>
+    <div class="stat-cell"><div class="stat-label">Projects Touched</div><div class="stat-value">${countProjects(data)}</div><div class="stat-sub">Named projects</div></div>
+  `;
+}
+function countProjects(data) {
+  const proj = new Set();
+  data.forEach(d => {
+    const m = d.task.match(/Project\s+\w+/i);
+    if (m) proj.add(m[0]);
+  });
+  return proj.size || '10+';
+}
+
+// Filter & sort state
+let sortCol = 'date', sortAsc = true, currentView = 'table';
+
+function getFiltered() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const mo = document.getElementById('filter-month').value;
+  const tm = document.getElementById('filter-team').value;
+  const ty = document.getElementById('filter-type').value;
+  return raw.filter(d => {
+    if (q && !JSON.stringify(d).toLowerCase().includes(q)) return false;
+    if (mo && d.monthKey !== mo) return false;
+    if (tm && !d.team.includes(tm)) return false;
+    if (ty && d.type !== ty) return false;
+    return true;
+  });
+}
+
+let sortState = {};
+function sortBy(col) {
+  if (sortCol === col) sortAsc = !sortAsc; else { sortCol = col; sortAsc = true; }
+  document.querySelectorAll('th').forEach(th => { th.classList.remove('sorted','asc'); });
+  const ths = document.querySelectorAll('th');
+  const cols = ['date','task','team',null,null];
+  const idx = cols.indexOf(col);
+  if (idx >= 0) { ths[idx].classList.add('sorted'); if (sortAsc) ths[idx].classList.add('asc'); }
+  render();
+}
+
+function render() {
+  let data = getFiltered();
+  data.sort((a,b) => {
+    const va = a[sortCol]||'', vb = b[sortCol]||'';
+    return sortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+  });
+  document.getElementById('results-info').textContent = `${data.length} / ${raw.length} entries`;
+  renderStats(data);
+  if (currentView === 'table') renderTable(data);
+  else renderTimeline(data);
+}
+
+function renderTable(data) {
+  const tbody = document.getElementById('table-body');
+  if (!data.length) { tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="icon">◇</div><p>No entries match filters</p></div></td></tr>`; return; }
+  tbody.innerHTML = data.map(d => `
+    <tr>
+      <td class="date">${d.date}</td>
+      <td class="task">${d.task}</td>
+      <td class="team">${d.team}</td>
+      <td class="desc">${d.desc}</td>
+      <td class="learning">${d.learning}</td>
+      <td><span class="tag ${typeClass[d.type]||'tag-admin'}">${d.type}</span></td>
+    </tr>
+  `).join('');
+}
+
+function renderTimeline(data) {
+  const months = {};
+  data.forEach(d => {
+    if (!months[d.monthKey]) months[d.monthKey] = [];
+    months[d.monthKey].push(d);
+  });
+  const container = document.getElementById('timeline-body');
+  if (!data.length) { container.innerHTML = `<div class="empty-state"><div class="icon">◇</div><p>No entries match filters</p></div>`; return; }
+  container.innerHTML = Object.entries(months).sort().map(([mk, entries]) => `
+    <div class="tl-month">
+      <div class="tl-month-header">
+        <div class="tl-month-label">${monthLabel(mk)}</div>
+        <div class="tl-month-line"></div>
+        <div class="tl-month-count">${entries.length} entries</div>
+      </div>
+      <div class="tl-entries">
+        ${entries.map(d => `
+          <div class="tl-entry">
+            <div class="tl-date">${d.date}</div>
+            <div>
+              <div class="tl-task">${d.task}</div>
+              <span class="tag ${typeClass[d.type]||'tag-admin'}" style="margin-top:6px;display:inline-block">${d.type}</span>
+            </div>
+            <div class="tl-team">${d.team}</div>
+            <div class="tl-desc">${d.desc}</div>
+            <div class="tl-learning">${d.learning}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function setView(v) {
+  currentView = v;
+  document.getElementById('table-view').style.display = v === 'table' ? 'block' : 'none';
+  document.getElementById('timeline-view').style.display = v === 'timeline' ? 'block' : 'none';
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.toggle('active', b.textContent.toLowerCase() === v));
+  render();
+}
+
+// Footer date range
+document.getElementById('footer-range').textContent = 'Generated Apr 2026 · ' + raw.length + ' sessions';
+
+// Init
+populateFilters();
+['search','filter-month','filter-team','filter-type'].forEach(id => document.getElementById(id).addEventListener('input', render));
+render();
+</script>
+</body>
+</html>
