@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DealStudio Pro — IB Valuation & Risk Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:14px;}
+body{background:#090c10;color:#e8edf2;font-family:'IBM Plex Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:#0d1117;}
+::-webkit-scrollbar-thumb{background:#1e2a35;border-radius:2px;}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;}
+input:focus,select:focus{outline:none;}
+:root{
+  --bg:#090c10;--surface:#0d1117;--panel:#111820;--panel-hi:#141e2a;
+  --border:#1e2a35;--border-hi:#2a3a4a;
+  --gold:#c9a84c;--gold-dim:#8a6e30;--gold-faint:#1a1507;
+  --mint:#2ecc8f;--mint-dim:#1a7a55;
+  --red:#e05a5a;--red-dim:#7a2a2a;
+  --blue:#5a9ee0;--amber:#e8a020;
+  --text:#e8edf2;--text-mid:#9aaab8;--text-dim:#6b7f92;
+}
+.serif{font-family:'Playfair Display',serif;}
+.mono{font-family:'IBM Plex Mono',monospace;}
+.label{font-family:'IBM Plex Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.14em;color:var(--text-dim);}
+.label.accent{color:var(--gold-dim);}
+#app{position:relative;min-height:100vh;}
+.grain{position:fixed;inset:0;pointer-events:none;z-index:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E");}
+.ambient{position:fixed;top:-180px;left:50%;transform:translateX(-50%);width:700px;height:360px;border-radius:50%;background:radial-gradient(ellipse,rgba(201,168,76,.05) 0%,transparent 70%);pointer-events:none;z-index:0;}
+#nav{position:sticky;top:0;z-index:100;background:rgba(13,17,23,.94);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);}
+.nav-inner{max-width:1280px;margin:0 auto;padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:52px;gap:16px;}
+.nav-brand{display:flex;align-items:baseline;gap:10px;flex-shrink:0;}
+.nav-brand .wordmark{font-family:'Playfair Display',serif;font-size:21px;font-weight:700;color:var(--gold);letter-spacing:-.01em;}
+.nav-brand .version{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text-dim);letter-spacing:.18em;text-transform:uppercase;}
+.nav-tabs{display:flex;gap:2px;}
+.nav-tab{padding:5px 14px;border:none;background:transparent;border-bottom:2px solid transparent;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .15s;font-weight:400;}
+.nav-tab.active{color:var(--gold);border-bottom:2px solid var(--gold);font-weight:600;}
+.nav-badge{background:var(--gold-faint);border:1px solid var(--gold-dim);border-radius:4px;padding:3px 10px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--gold-dim);letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;}
+#company-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:9px 28px;}
+.cbar{max-width:1280px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.company-select{background:var(--panel-hi);border:1px solid var(--border-hi);border-radius:5px;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:12px;padding:7px 32px 7px 12px;cursor:pointer;min-width:280px;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%238a6e30' d='M6 8L0 0h12z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;}
+.company-select option{background:#111820;}
+.sector-badge{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:3px 10px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;}
+.cap-badge{font-family:'IBM Plex Mono',monospace;font-size:9px;padding:3px 8px;border-radius:12px;border:1px solid;}
+.cap-large{color:#5a9ee0;border-color:#2a4a7a;}.cap-mid{color:#e8a020;border-color:#6a3a08;}.cap-small{color:#2ecc8f;border-color:#1a7a55;}
+#override-warning{display:none;background:rgba(232,160,32,.1);border:1px solid rgba(232,160,32,.4);border-radius:5px;padding:5px 12px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--amber);}
+#content{max-width:1280px;margin:0 auto;padding:24px 28px 64px;position:relative;z-index:1;}
+.tab-panel{display:none;}.tab-panel.active{display:block;}
+.section-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:600;color:var(--text);letter-spacing:-.01em;margin-bottom:4px;}
+.section-sub{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);margin-bottom:20px;}
+.rule{display:flex;align-items:center;gap:12px;margin:18px 0 13px;}
+.rule-line{flex:1;height:1px;background:linear-gradient(90deg,rgba(138,110,48,.5),transparent);}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+.grid-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;}
+.grid-5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;}
+.grid-6{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:7px;padding:18px 20px;}
+.kpi{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:14px 16px;display:flex;flex-direction:column;gap:5px;position:relative;overflow:hidden;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;cursor:default;}
+.kpi:hover{transform:scale(1.022);box-shadow:0 4px 22px rgba(0,0,0,.45);border-color:var(--border-hi);}
+.kpi.accent{border-color:rgba(201,168,76,.3);}
+.kpi.accent::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,rgba(201,168,76,0),var(--gold),rgba(201,168,76,0));}
+.kpi.accent:hover{box-shadow:0 4px 26px rgba(201,168,76,.1);}
+.kpi.warn{border-color:rgba(224,90,90,.3);}
+.kpi-label{font-family:'IBM Plex Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.14em;color:var(--text-dim);}
+.kpi-value{font-family:'Playfair Display',serif;font-size:24px;font-weight:600;color:var(--text);line-height:1;letter-spacing:-.02em;}
+.kpi.accent .kpi-value{color:var(--gold);}.kpi.warn .kpi-value{color:var(--red);}
+.kpi-sub{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);}
+.input-group{display:flex;flex-direction:column;gap:4px;}
+.input-wrap{display:flex;align-items:center;background:var(--panel-hi);border:1px solid var(--border);border-radius:4px;overflow:hidden;transition:border-color .15s;}
+.input-wrap:focus-within{border-color:var(--gold-dim);}
+.input-wrap input,.input-wrap select{flex:1;background:transparent;border:none;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:12px;padding:7px 10px;}
+.input-unit{padding:0 8px;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;font-size:10px;flex-shrink:0;}
+.ds-table{width:100%;border-collapse:collapse;font-family:'IBM Plex Mono',monospace;font-size:11px;}
+.ds-table th{padding:8px 12px;color:var(--text-dim);font-weight:400;font-size:9px;text-transform:uppercase;letter-spacing:.12em;border-bottom:1px solid var(--border);text-align:right;}
+.ds-table th:first-child{text-align:left;}
+.ds-table td{padding:7px 12px;border-bottom:1px solid rgba(30,42,53,.3);text-align:right;color:var(--text-mid);}
+.ds-table td:first-child{text-align:left;}
+.ds-table tr:nth-child(even) td{background:rgba(20,30,42,.3);}
+.td-gold{color:var(--gold);font-weight:500;}.td-mint{color:var(--mint);font-weight:500;}.td-text{color:var(--text);}.td-blue{color:var(--blue);}
+.tr-total td{border-top:1px solid var(--border) !important;background:var(--gold-faint) !important;color:var(--gold) !important;font-weight:600 !important;}
+.editable-cell{background:transparent;border:none;color:var(--text-mid);font-family:'IBM Plex Mono',monospace;font-size:11px;text-align:right;width:100%;padding:0;cursor:text;}
+.editable-cell:focus{color:var(--gold);outline:1px solid var(--gold-dim);border-radius:2px;background:var(--gold-faint);}
+.cell-modified{color:var(--amber) !important;}
+.hc-base{background:rgba(26,21,7,.8);color:var(--gold);font-weight:600;}
+.hc-up2{background:rgba(26,122,85,.4);color:var(--mint);}.hc-up1{background:rgba(26,122,85,.2);color:rgba(46,204,143,.7);}
+.hc-dn1{background:rgba(122,42,42,.2);color:rgba(224,90,90,.7);}.hc-dn2{background:rgba(122,42,42,.4);color:var(--red);}
+.bar-track{flex:1;height:9px;background:var(--border);border-radius:5px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:5px;transition:width .4s ease;}
+.toggle{display:flex;background:var(--panel);border:1px solid var(--border);border-radius:5px;padding:2px;gap:2px;}
+.toggle-btn{padding:4px 14px;border-radius:3px;border:none;background:transparent;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;font-size:10px;cursor:pointer;letter-spacing:.08em;text-transform:uppercase;transition:all .15s;}
+.toggle-btn.active{background:var(--gold);color:var(--bg);font-weight:600;}
+.add-tranche-btn{background:transparent;border:1px dashed var(--border-hi);border-radius:4px;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;font-size:10px;padding:5px 14px;cursor:pointer;transition:all .15s;text-transform:uppercase;letter-spacing:.08em;margin-top:6px;}
+.add-tranche-btn:hover{border-color:var(--gold-dim);color:var(--gold);}
+.remove-tranche{background:transparent;border:none;color:var(--red-dim);cursor:pointer;font-size:12px;padding:0 4px;transition:color .15s;}
+.remove-tranche:hover{color:var(--red);}
+#insight-idle,#insight-loading,#insight-error,#insight-result{display:none;}
+#insight-idle.show,#insight-loading.show,#insight-error.show,#insight-result.show{display:block;}
+@keyframes shimmer{0%{transform:translateX(-200%);}100%{transform:translateX(200%);}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.fade-in{animation:fadeIn .35s ease forwards;}
+.scroll-x{overflow-x:auto;}
+.ds-btn{padding:8px 18px;border-radius:5px;border:1px solid var(--gold-dim);background:var(--gold-faint);color:var(--gold);font-family:'IBM Plex Mono',monospace;font-size:10px;cursor:pointer;letter-spacing:.1em;text-transform:uppercase;font-weight:500;transition:all .2s;}
+.ds-btn:hover{background:rgba(201,168,76,.1);border-color:var(--gold);}
+.ds-btn:disabled{opacity:.4;cursor:not-allowed;}
+.wacc-row{display:flex;align-items:center;gap:14px;padding:8px 0;border-bottom:1px solid rgba(30,42,53,.3);}
+.wacc-label{width:220px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--text-dim);}
+.wacc-bar-t{flex:1;height:8px;background:var(--border);border-radius:4px;overflow:hidden;}
+.wacc-bar-f{height:100%;border-radius:4px;transition:width .5s ease;}
+.wacc-val{width:52px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;}
+@media(max-width:900px){
+  .grid-2,.grid-3,.grid-4,.grid-5,.grid-6{grid-template-columns:1fr;}
+  .nav-tabs{overflow-x:auto;flex-wrap:nowrap;}
+  .nav-badge{display:none;}
+}
+</style>
+</head>
+<body>
+<div id="app">
+<div class="grain"></div>
+<div class="ambient"></div>
+
+<div id="nav">
+  <div class="nav-inner">
+    <div class="nav-brand"><span class="wordmark">DealStudio</span><span class="version">Pro · v4.0</span></div>
+    <nav class="nav-tabs">
+      <button class="nav-tab active" onclick="showTab('overview')">Overview</button>
+      <button class="nav-tab" onclick="showTab('valuation')">Valuation</button>
+      <button class="nav-tab" onclick="showTab('wacc')">WACC</button>
+      <button class="nav-tab" onclick="showTab('risk')">Risk</button>
+      <button class="nav-tab" onclick="showTab('financials')">Financials</button>
+      <button class="nav-tab" onclick="showTab('insights')">Intelligence</button>
+    </nav>
+    <div class="nav-badge">Local · No API · Confidential</div>
+  </div>
+</div>
+
+<div id="company-bar">
+  <div class="cbar">
+    <select class="company-select" id="company-select" onchange="loadCompany(this.value)"></select>
+    <span class="sector-badge" id="co-sector">—</span>
+    <span class="cap-badge" id="co-cap">—</span>
+    <div id="override-warning">⚠ Amber values differ from preset data</div>
+  </div>
+</div>
+
+<div id="content">
+
+<!-- OVERVIEW -->
+<div id="tab-overview" class="tab-panel active">
+  <div style="background:linear-gradient(135deg,var(--panel),var(--panel-hi));border:1px solid var(--border);border-radius:8px;padding:22px 26px;position:relative;overflow:hidden;margin-bottom:16px;">
+    <div style="position:absolute;right:0;top:0;bottom:0;width:260px;background:radial-gradient(ellipse at right,rgba(201,168,76,.06),transparent 70%);pointer-events:none;"></div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:20px;">
+      <div>
+        <div class="serif" style="font-size:30px;font-weight:700;color:var(--text);letter-spacing:-.02em;line-height:1;" id="ov-company">—</div>
+        <div style="display:flex;gap:10px;margin-top:8px;align-items:center;flex-wrap:wrap;">
+          <div style="background:var(--gold-faint);border:1px solid var(--gold-dim);border-radius:4px;padding:3px 10px;"><span class="mono" style="font-size:11px;color:var(--gold);font-weight:500;" id="ov-ticker">—</span></div>
+          <span class="mono" style="font-size:11px;color:var(--text-dim);" id="ov-sector-full">—</span>
+          <span style="width:1px;height:12px;background:var(--border);display:inline-block;"></span>
+          <span class="mono" style="font-size:11px;color:var(--text-dim);">Mkt Cap: <span style="color:var(--text-mid);" id="ov-mcap">—</span></span>
+        </div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;">
+        <div class="serif" style="font-size:26px;font-weight:600;" id="ov-perf">—</div>
+        <div class="mono" style="font-size:10px;color:var(--text-dim);">1Y Return (Est.)</div>
+      </div>
+    </div>
+    <div style="margin-top:16px;">
+      <div style="display:flex;gap:16px;margin-bottom:7px;">
+        <div style="display:flex;align-items:center;gap:5px;"><div style="width:18px;height:2px;background:var(--gold);border-radius:1px;"></div><span class="mono" style="font-size:10px;color:var(--text-dim);" id="ov-ticker-leg">—</span></div>
+        <div style="display:flex;align-items:center;gap:5px;"><div style="width:18px;height:1px;background:var(--blue);border-radius:1px;"></div><span class="mono" style="font-size:10px;color:var(--text-dim);">NIFTY 50</span></div>
+      </div>
+      <svg id="perf-svg" width="100%" height="84" viewBox="0 0 800 84" preserveAspectRatio="none" style="display:block;"></svg>
+    </div>
+  </div>
+  <div class="grid-5" style="margin-bottom:14px;" id="ov-kpis-1"></div>
+  <div class="rule"><span class="label accent">Key Financial Snapshot</span><div class="rule-line"></div></div>
+  <div class="grid-4" id="ov-kpis-2"></div>
+</div>
+
+<!-- VALUATION -->
+<div id="tab-valuation" class="tab-panel">
+  <div class="section-title">DCF Valuation Engine</div>
+  <div class="section-sub">Drivers-based FCFF · Blended GGM + Exit Multiple terminal value · Live sensitivity · WACC auto-synced</div>
+  <div class="grid-3" style="margin-bottom:20px;">
+    <div class="panel">
+      <div class="rule" style="margin-top:0;"><span class="label accent">Revenue Drivers</span><div class="rule-line"></div></div>
+      <div style="display:flex;flex-direction:column;gap:9px;">
+        <div class="input-group"><div class="label">Base Revenue (₹ Cr)</div><div class="input-wrap"><input type="number" id="i-baseRev" value="880000" oninput="calcDCF()"/><span class="input-unit">Cr</span></div></div>
+        <div class="input-group"><div class="label">Revenue Growth Rate</div><div class="input-wrap"><input type="number" id="i-revGrowth" value="12.0" step="0.1" oninput="calcDCF()"/><span class="input-unit">%</span></div></div>
+        <div class="input-group"><div class="label">EBITDA Margin</div><div class="input-wrap"><input type="number" id="i-ebitdaMargin" value="18.5" step="0.1" oninput="calcDCF()"/><span class="input-unit">%</span></div></div>
+        <div class="input-group"><div class="label">Tax Rate</div><div class="input-wrap"><input type="number" id="i-taxRate" value="25.0" step="0.5" oninput="calcDCF()"/><span class="input-unit">%</span></div></div>
+        <div class="input-group"><div class="label">D&amp;A (₹ Cr)</div><div class="input-wrap"><input type="number" id="i-da" value="28000" oninput="calcDCF()"/><span class="input-unit">Cr</span></div></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="rule" style="margin-top:0;"><span class="label accent">Capex &amp; Working Capital</span><div class="rule-line"></div></div>
+      <div style="display:flex;flex-direction:column;gap:9px;">
+        <div class="input-group"><div class="label">Capex (₹ Cr)</div><div class="input-wrap"><input type="number" id="i-capex" value="55000" oninput="calcDCF()"/><span class="input-unit">Cr</span></div></div>
+        <div class="input-group"><div class="label">NWC Change % of Rev</div><div class="input-wrap"><input type="number" id="i-nwcPct" value="1.3" step="0.1" oninput="calcDCF()"/><span class="input-unit">%</span></div></div>
+        <div class="input-group"><div class="label">Net Debt (₹ Cr)</div><div class="input-wrap"><input type="number" id="i-netDebt" value="120000" oninput="calcDCF()"/><span class="input-unit">Cr</span></div></div>
+        <div class="input-group"><div class="label">Shares Outstanding (Cr)</div><div class="input-wrap"><input type="number" id="i-shares" value="6766" oninput="calcDCF()"/><span class="input-unit">Cr</span></div></div>
+        <div class="input-group"><div class="label">Projection Years</div><div class="input-wrap"><input type="number" id="i-years" value="5" min="3" max="10" step="1" oninput="calcDCF()"/></div></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="rule" style="margin-top:0;"><span class="label accent">Discount &amp; Terminal</span><div class="rule-line"></div></div>
+      <div style="display:flex;flex-direction:column;gap:9px;">
+        <div class="input-group"><div class="label">WACC (auto-synced from WACC tab)</div><div class="input-wrap" style="background:var(--gold-faint);border-color:rgba(201,168,76,.3);"><input type="number" id="i-wacc" value="11.2" step="0.1" oninput="calcDCF()"/><span class="input-unit" style="color:var(--gold-dim);">%</span></div></div>
+        <div class="input-group"><div class="label">Terminal Growth Rate</div><div class="input-wrap"><input type="number" id="i-tgr" value="5.0" step="0.1" oninput="calcDCF()"/><span class="input-unit">%</span></div></div>
+        <div class="input-group"><div class="label">Exit EV/EBITDA Multiple</div><div class="input-wrap"><input type="number" id="i-exitMult" value="10" step="0.5" oninput="calcDCF()"/><span class="input-unit">x</span></div></div>
+      </div>
+      <div class="rule"><span class="label accent">Live Output</span><div class="rule-line"></div></div>
+      <div id="dcf-output-rows"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0 0;border-top:1px solid var(--border);margin-top:6px;">
+        <span class="mono" style="font-size:10px;color:var(--gold-dim);font-weight:500;text-transform:uppercase;letter-spacing:.1em;">Intrinsic Value / Share</span>
+        <span class="mono" style="font-size:16px;color:var(--gold);font-weight:600;" id="dcf-price">₹—</span>
+      </div>
+    </div>
+  </div>
+  <div class="rule"><span class="label accent">FCFF Projection Schedule</span><div class="rule-line"></div></div>
+  <div class="scroll-x"><table class="ds-table"><thead><tr><th style="text-align:left;">Year</th><th>Growth</th><th>Revenue</th><th>EBITDA</th><th>EBIT</th><th>NOPAT</th><th>FCFF</th><th>PV(FCFF)</th></tr></thead><tbody id="proj-tbody"></tbody></table></div>
+  <div class="rule" style="margin-top:22px;"><span class="label accent">Sensitivity — Intrinsic Value / Share (WACC × TGR)</span><div class="rule-line"></div></div>
+  <div class="scroll-x"><table class="ds-table" id="sens-table" style="margin-bottom:10px;"></table></div>
+  <div style="display:flex;gap:14px;flex-wrap:wrap;">
+    <div style="display:flex;gap:5px;align-items:center;"><div style="width:8px;height:8px;border-radius:2px;background:var(--mint);"></div><span class="mono" style="font-size:9px;color:var(--text-dim);">Upside &gt;12%</span></div>
+    <div style="display:flex;gap:5px;align-items:center;"><div style="width:8px;height:8px;border-radius:2px;background:rgba(46,204,143,.5);"></div><span class="mono" style="font-size:9px;color:var(--text-dim);">Upside 4–12%</span></div>
+    <div style="display:flex;gap:5px;align-items:center;"><div style="width:8px;height:8px;border-radius:2px;background:var(--gold);"></div><span class="mono" style="font-size:9px;color:var(--text-dim);">Base Case</span></div>
+    <div style="display:flex;gap:5px;align-items:center;"><div style="width:8px;height:8px;border-radius:2px;background:rgba(224,90,90,.5);"></div><span class="mono" style="font-size:9px;color:var(--text-dim);">Downside 4–12%</span></div>
+    <div style="display:flex;gap:5px;align-items:center;"><div style="width:8px;height:8px;border-radius:2px;background:var(--red);"></div><span class="mono" style="font-size:9px;color:var(--text-dim);">Downside &gt;12%</span></div>
+  </div>
+</div>
+
+<!-- WACC -->
+<div id="tab-wacc" class="tab-panel">
+  <div class="section-title">WACC Engine</div>
+  <div class="section-sub">Full institutional build-up · CAPM Ke with CRP + Size Premium · Rating-implied Kd · Debt tranches · Tax shield</div>
+  <div class="grid-3" style="margin-bottom:20px;">
+    <div class="panel">
+      <div class="rule" style="margin-top:0;"><span class="label accent">Cost of Equity — CAPM Build-Up</span><div class="rule-line"></div></div>
+      <div style="display:flex;flex-direction:column;gap:9px;">
+        <div class="input-group"><div class="label">Risk-Free Rate (10Y G-Sec)</div><div class="input-wrap"><input type="number" id="w-rf" value="6.80" step="0.05" oninput="calcWACC()"/><span class="input-unit">%</span></div></div>
+        <div class="input-group"><div class="label">Equity Risk Premium</div><div class="input-wrap"><input type="number" id="w-erp" value="5.50" step="0.1" oninput="calcWACC()"/><span class="input-unit">%</span></div></div>
+        <div class="input-group"><div class="label">Re-Levered Beta (βL)</div><div class="input-wrap" style="background:var(--gold-faint);border-color:rgba(201,168,76,.2);"><input type="number" id="w-beta" value="0.92" step="0.01" oninput="calcWACC()"/><span class="input-unit" style="color:var(--gold-dim);">β</span></div></div>
+        <div class="input-group"><div class="label">Country Risk Premium (India)</div><div class="input-wrap"><input type="number" id="w-crp" value="1.20" step="0.1" oninput="calcWACC()"/><span class="input-unit">%</span></div></div>
+        <div class="input-group"><div class="label">Size Premium</div><div class="input-wrap"><input type="number" id="w-size" value="0.00" step="0.1" oninput="calcWACC()"/><span class="input-unit">%</span></div></div>
+      </div>
+      <div style="margin-top:14px;padding:10px 12px;background:var(--gold-faint);border:1px solid rgba(201,168,76,.2);border-radius:5px;">
+        <div class="mono" style="font-size:9px;color:var(--gold-dim);text-transform:uppercase;letter-spacing:.1em;">Ke = Rf + β·ERP + CRP + Size</div>
+        <div class="serif" style="font-size:22px;color:var(--gold);margin-top:4px;" id="w-ke-out">—</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="rule" style="margin-top:0;"><span class="label accent">Cost of Debt — Rating-Implied</span><div class="rule-line"></div></div>
+      <div style="display:flex;flex-direction:column;gap:9px;">
+        <div class="input-group"><div class="label">Credit Rating</div>
+          <div class="input-wrap">
+            <select id="w-rating" onchange="toggleKdManual();calcWACC();" style="flex:1;background:transparent;border:none;color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:12px;padding:7px 10px;cursor:pointer;">
+              <option value="0.40">AAA — Spread +40bps</option>
+              <option value="0.65">AA+ — Spread +65bps</option>
+              <option value="0.90">AA — Spread +90bps</option>
+              <option value="1.20" selected>AA- — Spread +120bps</option>
+              <option value="1.60">A+ — Spread +160bps</option>
+              <option value="2.10">A — Spread +210bps</option>
+              <option value="2.80">BBB — Spread +280bps</option>
+              <option value="4.00">BB — Spread +400bps</option>
+              <option value="manual">Manual Override</option>
+            </select>
+          </div>
+        </div>
+        <div class="input-group" id="kd-manual-wrap" style="display:none;"><div class="label">Manual Pre-Tax Kd</div><div class="input-wrap"><input type="number" id="w-kd-manual" value="7.50" step="0.1" oninput="calcWACC()"/><span class="input-unit">%</span></div></div>
+        <div class="input-group"><div class="label">Tax Rate</div><div class="input-wrap"><input type="number" id="w-tax" value="25.0" step="0.5" oninput="calcWACC()"/><span class="input-unit">%</span></div></div>
+      </div>
+      <div class="rule"><span class="label accent">Debt Tranches</span><div class="rule-line"></div></div>
+      <table class="ds-table" id="tranche-table"><thead><tr><th style="text-align:left;">Tranche</th><th>₹ Cr</th><th>Rate %</th><th></th></tr></thead><tbody id="tranche-tbody"></tbody></table>
+      <button class="add-tranche-btn" onclick="addTranche()">+ Add Tranche</button>
+      <div style="margin-top:12px;padding:10px 12px;background:rgba(90,158,224,.06);border:1px solid rgba(90,158,224,.2);border-radius:5px;">
+        <div class="mono" style="font-size:9px;color:var(--blue);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;">Wtd Kd (Pre-Tax) · After-Tax Kd</div>
+        <div style="display:flex;gap:16px;align-items:baseline;">
+          <div class="serif" style="font-size:20px;color:var(--blue);" id="w-kd-out">—</div>
+          <div class="mono" style="color:var(--text-dim);">→</div>
+          <div class="serif" style="font-size:20px;color:var(--text-mid);" id="w-kdat-out">—</div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="rule" style="margin-top:0;"><span class="label accent">Capital Structure</span><div class="rule-line"></div></div>
+      <div style="display:flex;flex-direction:column;gap:9px;">
+        <div class="input-group"><div class="label">Total Equity (₹ Cr)</div><div class="input-wrap"><input type="number" id="w-equity-val" value="680000" oninput="calcWACC()"/><span class="input-unit">Cr</span></div></div>
+        <div class="input-group"><div class="label">Total Debt (₹ Cr)</div><div class="input-wrap"><input type="number" id="w-debt-val" value="280000" oninput="calcWACC()"/><span class="input-unit">Cr</span></div></div>
+        <div style="padding:8px 10px;background:var(--panel-hi);border:1px solid var(--border);border-radius:4px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span class="mono" style="font-size:9px;color:var(--text-dim);">Equity Weight (We)</span><span class="mono" style="font-size:11px;color:var(--text);" id="w-we-disp">—</span></div>
+          <div style="display:flex;justify-content:space-between;"><span class="mono" style="font-size:9px;color:var(--text-dim);">Debt Weight (Wd)</span><span class="mono" style="font-size:11px;color:var(--text);" id="w-wd-disp">—</span></div>
+        </div>
+        <div class="input-group"><div class="label">Annual Interest Expense (₹ Cr)</div><div class="input-wrap"><input type="number" id="w-interest" value="18000" oninput="calcWACC()"/><span class="input-unit">Cr</span></div></div>
+      </div>
+      <div class="rule"><span class="label accent">Tax Shield</span><div class="rule-line"></div></div>
+      <div style="padding:10px 12px;background:rgba(46,204,143,.04);border:1px solid rgba(46,204,143,.15);border-radius:5px;margin-bottom:14px;">
+        <div class="mono" style="font-size:9px;color:var(--mint-dim);text-transform:uppercase;letter-spacing:.1em;">Tax Shield = Interest × Tax Rate</div>
+        <div class="serif" style="font-size:20px;color:var(--mint);margin-top:4px;" id="w-taxshield-out">—</div>
+      </div>
+      <div style="padding:14px 16px;background:var(--gold-faint);border:1px solid rgba(201,168,76,.35);border-radius:6px;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,rgba(201,168,76,0),var(--gold),rgba(201,168,76,0));"></div>
+        <div class="mono" style="font-size:9px;color:var(--gold-dim);text-transform:uppercase;letter-spacing:.1em;">WACC = Ke·We + Kd(1−t)·Wd</div>
+        <div class="serif" style="font-size:28px;color:var(--gold);font-weight:600;margin-top:6px;" id="w-wacc-out">—</div>
+        <div class="mono" style="font-size:9px;color:var(--gold-dim);margin-top:4px;" id="w-wacc-formula">—</div>
+      </div>
+    </div>
+  </div>
+  <div class="rule"><span class="label accent">WACC Build-Up Bridge</span><div class="rule-line"></div></div>
+  <div class="panel" id="wacc-bridge"></div>
+</div>
+
+<!-- RISK -->
+<div id="tab-risk" class="tab-panel">
+  <div class="section-title">Beta &amp; Risk Engine</div>
+  <div class="section-sub">Beta decomposition · Hamada unleveraging · CAPM · Risk metrics · VaR · Comp re-levering</div>
+  <div class="grid-3" style="margin-bottom:20px;">
+    <div class="panel">
+      <div class="rule" style="margin-top:0;"><span class="label accent">Beta Inputs</span><div class="rule-line"></div></div>
+      <div style="background:var(--panel-hi);border:1px solid var(--border);border-radius:5px;padding:10px 12px;margin-bottom:10px;">
+        <div class="label">Regression Beta (simulated)</div>
+        <div class="serif" style="font-size:22px;color:var(--blue);margin-top:3px;" id="r-regbeta">—</div>
+        <div class="mono" style="font-size:9px;color:var(--text-dim);">vs NIFTY 50 · 1Y daily returns</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:9px;">
+        <div class="input-group"><div class="label">Raw (Levered) Beta</div><div class="input-wrap"><input type="number" id="r-rawBeta" value="0.92" step="0.01" oninput="calcRisk()"/></div></div>
+        <div class="input-group"><div class="label">Debt / Equity Ratio</div><div class="input-wrap"><input type="number" id="r-de" value="0.42" step="0.01" oninput="calcRisk()"/></div></div>
+        <div class="input-group"><div class="label">Tax Rate</div><div class="input-wrap"><input type="number" id="r-taxRate" value="25.0" step="0.5" oninput="calcRisk()"/><span class="input-unit">%</span></div></div>
+        <div class="input-group"><div class="label">Alpha Adj (Size/Liquidity)</div><div class="input-wrap"><input type="number" id="r-alpha" value="0.50" step="0.1" oninput="calcRisk()"/><span class="input-unit">%</span></div></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="rule" style="margin-top:0;"><span class="label accent">CAPM Parameters</span><div class="rule-line"></div></div>
+      <div style="display:flex;flex-direction:column;gap:9px;">
+        <div class="input-group"><div class="label">Risk-Free Rate</div><div class="input-wrap"><input type="number" id="r-rf" value="6.80" step="0.05" oninput="calcRisk()"/><span class="input-unit">%</span></div></div>
+        <div class="input-group"><div class="label">Equity Risk Premium</div><div class="input-wrap"><input type="number" id="r-erp" value="5.50" step="0.1" oninput="calcRisk()"/><span class="input-unit">%</span></div></div>
+        <div class="input-group"><div class="label">Pre-Tax Cost of Debt</div><div class="input-wrap"><input type="number" id="r-kd" value="7.50" step="0.1" oninput="calcRisk()"/><span class="input-unit">%</span></div></div>
+        <div class="input-group"><div class="label">Equity Weight</div><div class="input-wrap"><input type="number" id="r-we" value="71.0" step="0.5" oninput="calcRisk()"/><span class="input-unit">%</span></div></div>
+        <div class="input-group"><div class="label">Debt Weight</div><div class="input-wrap"><input type="number" id="r-wd" value="29.0" step="0.5" oninput="calcRisk()"/><span class="input-unit">%</span></div></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="rule" style="margin-top:0;"><span class="label accent">Beta Output</span><div class="rule-line"></div></div>
+      <div id="beta-output-rows"></div>
+      <div class="rule"><span class="label accent">CAPM Output</span><div class="rule-line"></div></div>
+      <div id="capm-output-rows"></div>
+    </div>
+  </div>
+  <div class="rule"><span class="label accent">Quantitative Risk Metrics</span><div class="rule-line"></div></div>
+  <div class="grid-6" style="margin-bottom:20px;" id="risk-metrics-grid"></div>
+  <div class="rule"><span class="label accent">Cost of Equity — Risk Decomposition</span><div class="rule-line"></div></div>
+  <div class="panel" style="margin-bottom:20px;"><div id="ke-bars"></div><div style="display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid var(--border);margin-top:10px;"><span class="mono" style="font-size:10px;color:var(--gold-dim);font-weight:500;text-transform:uppercase;letter-spacing:.1em;">Total Ke</span><span class="mono" style="font-size:14px;color:var(--gold);font-weight:600;" id="ke-total">—</span></div></div>
+  <div class="grid-2" style="margin-bottom:20px;">
+    <div class="panel"><div class="rule" style="margin-top:0;"><span class="label accent">Rolling 30-Day Volatility</span><div class="rule-line"></div></div><svg id="vol-svg" width="100%" height="70" viewBox="0 0 600 70" preserveAspectRatio="none" style="display:block;margin-top:4px;"></svg><div style="display:flex;justify-content:space-between;margin-top:6px;"><span class="mono" style="font-size:9px;color:var(--text-dim);">52W Ago</span><span class="mono" style="font-size:9px;color:var(--amber);" id="vol-current">—</span></div></div>
+    <div class="panel"><div class="rule" style="margin-top:0;"><span class="label accent">Daily Return Distribution</span><div class="rule-line"></div></div><div id="ret-dist" style="display:flex;gap:1px;align-items:flex-end;height:60px;margin-top:8px;"></div><div style="display:flex;justify-content:space-between;margin-top:6px;"><span class="mono" style="font-size:9px;color:var(--red);">−5%</span><span class="mono" style="font-size:9px;color:var(--text-dim);">Daily Returns</span><span class="mono" style="font-size:9px;color:var(--mint);">+5%</span></div></div>
+  </div>
+  <div class="rule"><span class="label accent">Comparable Beta — Hamada Re-Levering</span><div class="rule-line"></div></div>
+  <div class="scroll-x" style="margin-bottom:20px;"><table class="ds-table"><thead><tr><th style="text-align:left;">Company</th><th>Raw β</th><th>D/E</th><th>Unlevered β</th><th>Re-Levered β</th><th>Ke (CAPM)</th></tr></thead><tbody id="comp-tbody"></tbody></table></div>
+  <div class="rule"><span class="label accent">Ke Sensitivity — Beta × ERP</span><div class="rule-line"></div></div>
+  <div class="scroll-x"><table class="ds-table" id="ke-sens-table"></table></div>
+</div>
+
+<!-- FINANCIALS -->
+<div id="tab-financials" class="tab-panel">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+    <div><div class="section-title">Financial Statements</div><div class="section-sub">5-year historical · Click any value to edit · Amber = overridden from preset</div></div>
+    <button class="ds-btn" onclick="resetFinancials()">↺ Reset to Preset</button>
+  </div>
+  <div class="grid-2" style="margin-bottom:20px;">
+    <div class="panel"><div class="rule" style="margin-top:0;"><span class="label accent">Revenue (₹ Cr)</span><div class="rule-line"></div></div><div id="rev-chart-wrap" style="position:relative;"></div><div style="display:flex;justify-content:space-between;margin-top:8px;"><span class="mono" style="font-size:9px;color:var(--text-dim);">5Y CAGR</span><span class="mono" style="font-size:10px;color:var(--blue);font-weight:500;" id="rev-cagr">—</span></div></div>
+    <div class="panel"><div class="rule" style="margin-top:0;"><span class="label accent">EBITDA (₹ Cr)</span><div class="rule-line"></div></div><div id="ebitda-chart-wrap" style="position:relative;"></div><div style="display:flex;justify-content:space-between;margin-top:8px;"><span class="mono" style="font-size:9px;color:var(--text-dim);">5Y CAGR</span><span class="mono" style="font-size:10px;color:var(--gold);font-weight:500;" id="ebitda-cagr">—</span></div></div>
+  </div>
+  <div class="rule"><span class="label accent">Income Statement — Editable</span><div class="rule-line"></div></div>
+  <div class="scroll-x" style="margin-bottom:20px;"><table class="ds-table" id="pl-table"></table></div>
+  <div class="rule"><span class="label accent">Balance Sheet &amp; Capital Efficiency</span><div class="rule-line"></div></div>
+  <div class="grid-4" id="bs-kpis"></div>
+</div>
+
+<!-- INTELLIGENCE -->
+<div id="tab-insights" class="tab-panel">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
+    <div><div class="section-title">Intelligence Layer</div><div class="section-sub">Rule-based analyst engine · Live from all inputs · Generates on demand</div></div>
+    <button id="gen-btn" class="ds-btn" onclick="generateInsights()" style="font-size:11px;padding:10px 22px;">⚡ Generate Insights</button>
+  </div>
+  <div id="insight-idle" class="show"><div style="background:var(--panel);border:1px dashed var(--border);border-radius:8px;padding:48px 32px;text-align:center;"><div class="serif" style="font-size:20px;color:var(--text-dim);margin-bottom:8px;">Analyst Ready</div><div class="mono" style="font-size:11px;color:var(--text-dim);">Click "Generate Insights" — synthesises all module inputs into institutional-grade commentary.</div></div></div>
+  <div id="insight-loading"><div style="background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:48px 32px;text-align:center;"><div class="serif" style="font-size:18px;color:var(--text-mid);">Synthesising financial data...</div><div style="margin-top:16px;height:2px;background:var(--border);border-radius:1px;overflow:hidden;"><div style="height:100%;background:linear-gradient(90deg,transparent,var(--gold),transparent);width:60%;animation:shimmer 1.5s infinite;"></div></div></div></div>
+  <div id="insight-error"><div style="background:rgba(122,42,42,.2);border:1px solid rgba(224,90,90,.3);border-radius:8px;padding:20px;"><span class="mono" style="font-size:11px;color:var(--red);">Analysis failed. Check inputs and try again.</span></div></div>
+  <div id="insight-result"></div>
+</div>
+
+</div><!-- /content -->
+</div><!-- /app -->
+
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════
+   DEALSTUDIO PRO v4.0 — FULL ENGINE
+   Multi-company · Institutional WACC · Editable Financials · Intelligence
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Helpers ── */
+const n2=v=>(isNaN(v)||v==null)?"—":v.toFixed(2);
+const n1=v=>(isNaN(v)||v==null)?"—":v.toFixed(1);
+const pct=(v,d=1)=>isNaN(v)?"—":`${(v*100).toFixed(d)}%`;
+const cr=v=>{if(isNaN(v)||v==null)return"—";const a=Math.abs(v),s=v<0?"-":"";if(a>=1e5)return`${s}₹${(a/1e5).toFixed(2)}L Cr`;if(a>=1e3)return`${s}₹${(a/1e3).toFixed(1)}K Cr`;return`${s}₹${a.toFixed(0)} Cr`;};
+const clamp=(v,lo,hi)=>Math.min(hi,Math.max(lo,v));
+const el=id=>document.getElementById(id);
+const gv=id=>parseFloat(el(id).value)||0;
+const sv=(id,v)=>{const e=el(id);if(e)e.value=v;};
+
+/* ── Price Series Generator ── */
+function genPrices(seed,n=252,start=1000,v=0.018,d=0.0004){
+  let p=start,s=seed;
+  const rand=()=>{s=(s*1664525+1013904223)&0xffffffff;return(s>>>0)/0xffffffff;};
+  const a=[p];for(let i=1;i<n;i++){const u1=rand(),u2=rand();const z=Math.sqrt(-2*Math.log(Math.max(u1,1e-10)))*Math.cos(2*Math.PI*u2);p*=Math.exp(d+v*z);a.push(p);}return a;
+}
+const BENCH=genPrices(42,252,19800,0.012,0.0003);
+const getStock=seed=>genPrices(seed,252,1000+seed*17,0.015+seed*.001,0.0003+seed*.00005);
+
+/* ── Quant Functions ── */
+const rets=p=>p.slice(1).map((v,i)=>(v-p[i])/p[i]);
+function betaCalc(sr,mr){const n=Math.min(sr.length,mr.length),s=sr.slice(0,n),m=mr.slice(0,n),ms=s.reduce((a,b)=>a+b,0)/n,mm=m.reduce((a,b)=>a+b,0)/n;let c=0,vm=0;for(let i=0;i<n;i++){c+=(s[i]-ms)*(m[i]-mm);vm+=(m[i]-mm)**2;}return c/vm;}
+function volCalc(r){const n=r.length,mean=r.reduce((a,b)=>a+b,0)/n;return Math.sqrt(r.reduce((a,b)=>a+(b-mean)**2,0)/(n-1)*252);}
+function sharpeCalc(r,rf=0.068){return(r.reduce((a,b)=>a+b,0)/r.length*252-rf)/volCalc(r);}
+function sortinoCalc(r,rf=0.068){const rfd=rf/252,dn=r.filter(v=>v<rfd);if(!dn.length)return 99;const dv=Math.sqrt(dn.reduce((a,v)=>a+(v-rfd)**2,0)/dn.length*252);return(r.reduce((a,b)=>a+b,0)/r.length*252-rf)/dv;}
+function maxDDCalc(p){let peak=p[0],dd=0;for(const v of p){if(v>peak)peak=v;dd=Math.max(dd,(peak-v)/peak);}return dd;}
+function VaRCalc(r,c=0.95){const s=[...r].sort((a,b)=>a-b);return-s[Math.floor((1-c)*r.length)];}
+function blumeAdj(b){return 0.333+0.667*b;}
+
+/* ═══════════════════════════════════════════════════════════════
+   COMPANY DATABASE — 15 Indian companies
+   ═══════════════════════════════════════════════════════════════ */
+const COMPANIES={
+  reliance:{name:"Reliance Industries Ltd",ticker:"RELIANCE",sector:"Energy · Petrochemicals · Telecom · Retail",cap:"large",mcap:"₹19.5L Cr",ret1y:0.142,seed:7,
+    dcf:{baseRev:880000,revGrowth:12,ebitdaMargin:18.5,taxRate:25,da:28000,capex:55000,nwcPct:1.3,wacc:11.2,tgr:5.0,exitMult:10,netDebt:120000,shares:6766,years:5},
+    wacc:{rf:6.80,erp:5.50,beta:0.92,crp:1.20,size:0.00,rating:"1.20",equityVal:680000,debtVal:280000,interest:18000,tax:25,tranches:[{name:"NCD FY27",amt:120000,rate:7.2},{name:"ECB FY28",amt:80000,rate:6.8},{name:"Term Loan",amt:80000,rate:8.1}]},
+    risk:{rawBeta:0.92,de:0.42,taxRate:25,rf:6.80,erp:5.50,alpha:0.50,kd:7.50,we:71,wd:29},
+    hist:{years:["FY21","FY22","FY23","FY24","FY25E"],revenue:[520000,620000,760000,820000,880000],ebitda:[88000,105000,138000,152000,163000],ebit:[60000,77000,110000,124000,135000],pat:[44000,53000,60000,63000,66700],debt:[280000,290000,295000,285000,280000],equity:[560000,610000,640000,665000,680000],cash:[95000,88000,75000,82000,90000]},
+    kpis:{evEbitda:10.8,pe:27.4,roce:10.2,roe:9.4,netDE:0.42,fcfYield:2.4,currentRatio:1.24,interestCover:6.8}},
+  tcs:{name:"Tata Consultancy Services",ticker:"TCS",sector:"IT Services · BPO · Consulting",cap:"large",mcap:"₹13.8L Cr",ret1y:0.087,seed:12,
+    dcf:{baseRev:240000,revGrowth:8.5,ebitdaMargin:26.0,taxRate:25,da:3200,capex:4800,nwcPct:0.5,wacc:10.5,tgr:4.5,exitMult:22,netDebt:-65000,shares:3625,years:5},
+    wacc:{rf:6.80,erp:5.50,beta:0.68,crp:1.20,size:0.00,rating:"0.40",equityVal:1380000,debtVal:8000,interest:520,tax:25,tranches:[{name:"Working Capital",amt:8000,rate:5.5}]},
+    risk:{rawBeta:0.68,de:0.01,taxRate:25,rf:6.80,erp:5.50,alpha:0.00,kd:5.50,we:99,wd:1},
+    hist:{years:["FY21","FY22","FY23","FY24","FY25E"],revenue:[164177,191754,225458,240893,240000],ebitda:[43300,50200,58600,62600,62400],ebit:[40100,46900,55200,59300,59200],pat:[32430,38327,42147,45908,47000],debt:[7200,7500,8000,8200,8000],equity:[880000,1050000,1190000,1310000,1380000],cash:[55000,62000,68000,72000,75000]},
+    kpis:{evEbitda:22.1,pe:29.3,roce:52.4,roe:46.1,netDE:-0.08,fcfYield:3.2,currentRatio:2.8,interestCover:114}},
+  infosys:{name:"Infosys Ltd",ticker:"INFY",sector:"IT Services · Digital · Cloud",cap:"large",mcap:"₹6.2L Cr",ret1y:0.062,seed:19,
+    dcf:{baseRev:158000,revGrowth:7.0,ebitdaMargin:24.5,taxRate:25,da:2800,capex:3600,nwcPct:0.6,wacc:10.8,tgr:4.0,exitMult:20,netDebt:-42000,shares:4150,years:5},
+    wacc:{rf:6.80,erp:5.50,beta:0.72,crp:1.20,size:0.00,rating:"0.40",equityVal:620000,debtVal:5000,interest:280,tax:25,tranches:[{name:"Working Capital",amt:5000,rate:5.5}]},
+    risk:{rawBeta:0.72,de:0.01,taxRate:25,rf:6.80,erp:5.50,alpha:0.00,kd:5.50,we:99,wd:1},
+    hist:{years:["FY21","FY22","FY23","FY24","FY25E"],revenue:[100472,121641,146767,153670,158000],ebitda:[24600,30400,36100,37600,38700],ebit:[22800,28500,34200,35700,36800],pat:[19351,22110,24108,26248,27000],debt:[4200,4500,5000,5200,5000],equity:[480000,540000,580000,610000,620000],cash:[28000,32000,36000,40000,42000]},
+    kpis:{evEbitda:15.8,pe:23.1,roce:38.2,roe:32.4,netDE:-0.06,fcfYield:3.8,currentRatio:2.4,interestCover:131}},
+  hdfc:{name:"HDFC Bank Ltd",ticker:"HDFCBANK",sector:"Private Sector Banking · Retail Finance",cap:"large",mcap:"₹12.4L Cr",ret1y:-0.032,seed:23,
+    dcf:{baseRev:240000,revGrowth:14.0,ebitdaMargin:48.0,taxRate:25,da:3500,capex:4200,nwcPct:0.2,wacc:12.5,tgr:5.5,exitMult:18,netDebt:0,shares:7500,years:5},
+    wacc:{rf:6.80,erp:5.50,beta:1.05,crp:1.20,size:0.00,rating:"0.40",equityVal:1240000,debtVal:0,interest:0,tax:25,tranches:[]},
+    risk:{rawBeta:1.05,de:8.2,taxRate:25,rf:6.80,erp:5.50,alpha:0.20,kd:6.50,we:100,wd:0},
+    hist:{years:["FY21","FY22","FY23","FY24","FY25E"],revenue:[140000,158000,185000,214000,240000],ebitda:[64000,73000,86000,98000,115000],ebit:[60000,69000,82000,94000,110000],pat:[31116,36961,44109,60811,70000],debt:[0,0,0,0,0],equity:[890000,1020000,1140000,1230000,1240000],cash:[0,0,0,0,0]},
+    kpis:{evEbitda:10.8,pe:17.7,roce:16.8,roe:15.4,netDE:0,fcfYield:4.1,currentRatio:1.1,interestCover:8.2}},
+  icici:{name:"ICICI Bank Ltd",ticker:"ICICIBANK",sector:"Private Sector Banking · Retail & Corporate",cap:"large",mcap:"₹9.1L Cr",ret1y:0.218,seed:31,
+    dcf:{baseRev:182000,revGrowth:16.0,ebitdaMargin:44.0,taxRate:25,da:2800,capex:3500,nwcPct:0.2,wacc:12.8,tgr:5.5,exitMult:16,netDebt:0,shares:7050,years:5},
+    wacc:{rf:6.80,erp:5.50,beta:1.12,crp:1.20,size:0.00,rating:"0.40",equityVal:910000,debtVal:0,interest:0,tax:25,tranches:[]},
+    risk:{rawBeta:1.12,de:7.8,taxRate:25,rf:6.80,erp:5.50,alpha:0.30,kd:6.50,we:100,wd:0},
+    hist:{years:["FY21","FY22","FY23","FY24","FY25E"],revenue:[94000,116000,142000,162000,182000],ebitda:[38000,48000,61000,72000,80000],ebit:[34000,44000,57000,68000,75000],pat:[16193,23339,31896,40888,48000],debt:[0,0,0,0,0],equity:[580000,700000,800000,880000,910000],cash:[0,0,0,0,0]},
+    kpis:{evEbitda:11.4,pe:18.9,roce:15.2,roe:16.8,netDE:0,fcfYield:3.6,currentRatio:1.1,interestCover:9.4}},
+  airtel:{name:"Bharti Airtel Ltd",ticker:"BHARTIARTL",sector:"Telecom · DTH · Africa Operations",cap:"large",mcap:"₹8.8L Cr",ret1y:0.312,seed:37,
+    dcf:{baseRev:149000,revGrowth:13.0,ebitdaMargin:52.0,taxRate:25,da:28000,capex:42000,nwcPct:0.8,wacc:11.8,tgr:5.0,exitMult:8,netDebt:210000,shares:5600,years:5},
+    wacc:{rf:6.80,erp:5.50,beta:0.88,crp:1.20,size:0.00,rating:"1.60",equityVal:880000,debtVal:250000,interest:16000,tax:25,tranches:[{name:"NCD FY27",amt:100000,rate:7.8},{name:"ECB",amt:80000,rate:6.2},{name:"Bank Loan",amt:70000,rate:8.5}]},
+    risk:{rawBeta:0.88,de:0.28,taxRate:25,rf:6.80,erp:5.50,alpha:0.50,kd:7.50,we:78,wd:22},
+    hist:{years:["FY21","FY22","FY23","FY24","FY25E"],revenue:[100616,116547,139144,149862,149000],ebitda:[49800,58600,70200,78000,77500],ebit:[21000,29000,41000,50000,50000],pat:[-8293,2160,6505,7467,9000],debt:[230000,240000,235000,225000,210000],equity:[580000,640000,720000,820000,880000],cash:[16000,18000,20000,22000,24000]},
+    kpis:{evEbitda:13.8,pe:98.2,roce:12.4,roe:5.8,netDE:0.24,fcfYield:1.2,currentRatio:0.6,interestCover:3.1}},
+  lt:{name:"Larsen & Toubro Ltd",ticker:"LT",sector:"Infrastructure · Engineering · Defence",cap:"large",mcap:"₹5.2L Cr",ret1y:0.128,seed:43,
+    dcf:{baseRev:220000,revGrowth:15.0,ebitdaMargin:13.5,taxRate:25,da:3200,capex:5500,nwcPct:1.5,wacc:11.5,tgr:5.0,exitMult:14,netDebt:18000,shares:1400,years:5},
+    wacc:{rf:6.80,erp:5.50,beta:0.98,crp:1.20,size:0.00,rating:"0.90",equityVal:520000,debtVal:60000,interest:3800,tax:25,tranches:[{name:"Bonds",amt:40000,rate:7.4},{name:"Bank Loans",amt:20000,rate:8.0}]},
+    risk:{rawBeta:0.98,de:0.12,taxRate:25,rf:6.80,erp:5.50,alpha:0.20,kd:7.40,we:90,wd:10},
+    hist:{years:["FY21","FY22","FY23","FY24","FY25E"],revenue:[135982,155000,180000,200000,220000],ebitda:[16700,18900,22500,26000,29700],ebit:[13500,15700,19300,22800,26400],pat:[10091,11313,13967,15404,17000],debt:[55000,58000,62000,60000,60000],equity:[400000,440000,470000,500000,520000],cash:[22000,24000,26000,28000,30000]},
+    kpis:{evEbitda:18.6,pe:30.7,roce:14.8,roe:14.2,netDE:0.05,fcfYield:2.1,currentRatio:1.32,interestCover:6.9}},
+  asianpaints:{name:"Asian Paints Ltd",ticker:"ASIANPAINT",sector:"Consumer · Paints · Coatings",cap:"large",mcap:"₹2.4L Cr",ret1y:-0.182,seed:51,
+    dcf:{baseRev:35500,revGrowth:8.0,ebitdaMargin:20.5,taxRate:25,da:800,capex:1400,nwcPct:1.2,wacc:12.0,tgr:4.5,exitMult:40,netDebt:-4000,shares:958,years:5},
+    wacc:{rf:6.80,erp:5.50,beta:0.62,crp:1.20,size:0.00,rating:"0.40",equityVal:240000,debtVal:2000,interest:80,tax:25,tranches:[{name:"Working Capital",amt:2000,rate:6.2}]},
+    risk:{rawBeta:0.62,de:0.01,taxRate:25,rf:6.80,erp:5.50,alpha:0.00,kd:6.20,we:99,wd:1},
+    hist:{years:["FY21","FY22","FY23","FY24","FY25E"],revenue:[20209,28508,34489,34746,35500],ebitda:[4300,5600,6200,6700,7280],ebit:[3700,4900,5500,5900,6450],pat:[2723,3618,3929,4169,4600],debt:[1800,2000,2200,2100,2000],equity:[176000,210000,230000,238000,240000],cash:[3800,4200,4600,5000,5200]},
+    kpis:{evEbitda:33.2,pe:52.1,roce:34.6,roe:30.2,netDE:-0.02,fcfYield:1.8,currentRatio:1.8,interestCover:80.6}},
+  sunpharma:{name:"Sun Pharmaceutical Industries",ticker:"SUNPHARMA",sector:"Pharmaceuticals · Specialty · Generics",cap:"large",mcap:"₹4.2L Cr",ret1y:0.224,seed:58,
+    dcf:{baseRev:50000,revGrowth:10.0,ebitdaMargin:26.0,taxRate:20,da:2200,capex:3500,nwcPct:1.0,wacc:11.2,tgr:4.5,exitMult:18,netDebt:-12000,shares:2400,years:5},
+    wacc:{rf:6.80,erp:5.50,beta:0.78,crp:1.20,size:0.00,rating:"0.65",equityVal:420000,debtVal:8000,interest:480,tax:20,tranches:[{name:"FCCB",amt:5000,rate:5.8},{name:"Term Loan",amt:3000,rate:7.5}]},
+    risk:{rawBeta:0.78,de:0.02,taxRate:20,rf:6.80,erp:5.50,alpha:0.20,kd:6.50,we:98,wd:2},
+    hist:{years:["FY21","FY22","FY23","FY24","FY25E"],revenue:[37095,38634,43000,46500,50000],ebitda:[8800,9400,10800,11900,13000],ebit:[6600,7200,8600,9700,10800],pat:[5149,4711,6753,8169,9200],debt:[7500,7800,8200,8000,8000],equity:[300000,330000,370000,400000,420000],cash:[14000,16000,18000,20000,22000]},
+    kpis:{evEbitda:31.7,pe:45.7,roce:18.4,roe:16.2,netDE:-0.03,fcfYield:2.4,currentRatio:2.1,interestCover:22.6}},
+  tatamotors:{name:"Tata Motors Ltd",ticker:"TATAMOTORS",sector:"Automobiles · JLR · Commercial Vehicles",cap:"large",mcap:"₹3.2L Cr",ret1y:-0.142,seed:63,
+    dcf:{baseRev:440000,revGrowth:6.0,ebitdaMargin:13.0,taxRate:25,da:18000,capex:28000,nwcPct:0.8,wacc:12.5,tgr:4.0,exitMult:6,netDebt:42000,shares:3700,years:5},
+    wacc:{rf:6.80,erp:5.50,beta:1.35,crp:1.20,size:0.00,rating:"2.10",equityVal:320000,debtVal:140000,interest:9800,tax:25,tranches:[{name:"NCD",amt:60000,rate:8.5},{name:"ECB (JLR)",amt:50000,rate:5.8},{name:"Bank Loan",amt:30000,rate:9.0}]},
+    risk:{rawBeta:1.35,de:0.44,taxRate:25,rf:6.80,erp:5.50,alpha:1.00,kd:8.20,we:70,wd:30},
+    hist:{years:["FY21","FY22","FY23","FY24","FY25E"],revenue:[249795,278454,342122,437928,440000],ebitda:[24000,29000,38000,55000,57200],ebit:[6000,11000,20000,37000,39200],pat:[-13395,-8429,2963,31807,24000],debt:[155000,148000,145000,142000,140000],equity:[220000,250000,280000,310000,320000],cash:[64000,72000,86000,94000,100000]},
+    kpis:{evEbitda:6.8,pe:13.3,roce:12.8,roe:18.2,netDE:0.13,fcfYield:4.2,currentRatio:0.82,interestCover:4.0}},
+  dhanuka:{name:"Dhanuka Agritech Ltd",ticker:"DHANUKA",sector:"Agro Chemicals · Pesticides · Crop Protection",cap:"mid",mcap:"₹7,200 Cr",ret1y:0.084,seed:71,
+    dcf:{baseRev:1900,revGrowth:14.0,ebitdaMargin:16.5,taxRate:25,da:60,capex:80,nwcPct:2.0,wacc:13.5,tgr:5.0,exitMult:18,netDebt:-280,shares:47,years:5},
+    wacc:{rf:6.80,erp:5.50,beta:0.72,crp:1.20,size:1.50,rating:"0.65",equityVal:7200,debtVal:100,interest:6,tax:25,tranches:[{name:"Working Capital",amt:100,rate:7.0}]},
+    risk:{rawBeta:0.72,de:0.01,taxRate:25,rf:6.80,erp:5.50,alpha:1.50,kd:7.00,we:99,wd:1},
+    hist:{years:["FY21","FY22","FY23","FY24","FY25E"],revenue:[1307,1524,1815,1862,1900],ebitda:[196,228,272,294,314],ebit:[182,212,256,278,295],pat:[145,168,202,220,238],debt:[80,90,100,100,100],equity:[4200,4800,5400,6200,7200],cash:[320,380,420,460,500]},
+    kpis:{evEbitda:22.4,pe:30.3,roce:24.8,roe:18.6,netDE:-0.04,fcfYield:2.8,currentRatio:3.2,interestCover:49}},
+  coforge:{name:"Coforge Ltd",ticker:"COFORGE",sector:"IT Services · Mid-cap · BFS & Travel",cap:"mid",mcap:"₹42,000 Cr",ret1y:0.186,seed:83,
+    dcf:{baseRev:9800,revGrowth:18.0,ebitdaMargin:18.5,taxRate:25,da:280,capex:420,nwcPct:0.8,wacc:12.0,tgr:5.0,exitMult:22,netDebt:-1200,shares:62,years:5},
+    wacc:{rf:6.80,erp:5.50,beta:0.92,crp:1.20,size:0.80,rating:"0.90",equityVal:42000,debtVal:1800,interest:110,tax:25,tranches:[{name:"Term Loan",amt:1800,rate:7.8}]},
+    risk:{rawBeta:0.92,de:0.04,taxRate:25,rf:6.80,erp:5.50,alpha:0.80,kd:7.80,we:96,wd:4},
+    hist:{years:["FY21","FY22","FY23","FY24","FY25E"],revenue:[5230,6334,7554,8638,9800],ebitda:[860,1060,1320,1580,1813],ebit:[740,930,1190,1450,1680],pat:[510,640,780,920,1060],debt:[1600,1700,1800,1800,1800],equity:[22000,28000,34000,38000,42000],cash:[1800,2000,2200,2500,2800]},
+    kpis:{evEbitda:23.2,pe:39.6,roce:22.4,roe:18.8,netDE:-0.03,fcfYield:2.2,currentRatio:2.0,interestCover:15.3}},
+  dixon:{name:"Dixon Technologies Ltd",ticker:"DIXON",sector:"Electronics Manufacturing · EMS",cap:"mid",mcap:"₹52,000 Cr",ret1y:0.264,seed:89,
+    dcf:{baseRev:19000,revGrowth:28.0,ebitdaMargin:5.5,taxRate:25,da:280,capex:480,nwcPct:0.5,wacc:13.0,tgr:5.5,exitMult:30,netDebt:-600,shares:118,years:5},
+    wacc:{rf:6.80,erp:5.50,beta:1.18,crp:1.20,size:0.80,rating:"1.20",equityVal:52000,debtVal:3500,interest:220,tax:25,tranches:[{name:"Working Capital",amt:2000,rate:7.8},{name:"Term Loan",amt:1500,rate:8.2}]},
+    risk:{rawBeta:1.18,de:0.07,taxRate:25,rf:6.80,erp:5.50,alpha:0.80,kd:8.00,we:94,wd:6},
+    hist:{years:["FY21","FY22","FY23","FY24","FY25E"],revenue:[4442,8054,11455,17690,19000],ebitda:[218,358,542,884,1045],ebit:[175,302,468,798,954],pat:[124,215,312,488,580],debt:[2800,3000,3200,3400,3500],equity:[18000,26000,36000,46000,52000],cash:[900,1100,1400,1700,2000]},
+    kpis:{evEbitda:49.8,pe:89.7,roce:24.2,roe:20.6,netDE:0.03,fcfYield:1.0,currentRatio:1.2,interestCover:4.3}},
+  archies:{name:"Archies Ltd",ticker:"ARCHIES",sector:"Gifting · Stationery · Lifestyle Retail",cap:"small",mcap:"₹280 Cr",ret1y:0.062,seed:79,
+    dcf:{baseRev:280,revGrowth:10.0,ebitdaMargin:12.0,taxRate:25,da:14,capex:18,nwcPct:2.5,wacc:15.0,tgr:4.5,exitMult:10,netDebt:-40,shares:21,years:5},
+    wacc:{rf:6.80,erp:5.50,beta:0.65,crp:1.20,size:3.00,rating:"2.10",equityVal:280,debtVal:25,interest:2,tax:25,tranches:[{name:"Working Capital",amt:25,rate:10.5}]},
+    risk:{rawBeta:0.65,de:0.09,taxRate:25,rf:6.80,erp:5.50,alpha:3.00,kd:10.50,we:92,wd:8},
+    hist:{years:["FY21","FY22","FY23","FY24","FY25E"],revenue:[148,198,242,264,280],ebitda:[14,22,28,30,34],ebit:[8,14,20,21,23],pat:[5,10,14,16,18],debt:[22,24,26,26,25],equity:[140,160,185,220,280],cash:[32,38,42,46,50]},
+    kpis:{evEbitda:8.0,pe:15.6,roce:12.4,roe:8.8,netDE:-0.14,fcfYield:3.6,currentRatio:1.8,interestCover:11.5}},
+  custom:{name:"Custom Company",ticker:"CUSTOM",sector:"Manual Entry Mode",cap:"mid",mcap:"—",ret1y:0,seed:5,
+    dcf:{baseRev:10000,revGrowth:10,ebitdaMargin:20,taxRate:25,da:500,capex:800,nwcPct:1.0,wacc:12.0,tgr:5.0,exitMult:12,netDebt:0,shares:100,years:5},
+    wacc:{rf:6.80,erp:5.50,beta:1.00,crp:1.20,size:0.00,rating:"1.20",equityVal:10000,debtVal:2000,interest:150,tax:25,tranches:[{name:"Term Loan",amt:2000,rate:8.0}]},
+    risk:{rawBeta:1.00,de:0.20,taxRate:25,rf:6.80,erp:5.50,alpha:0.50,kd:8.00,we:83,wd:17},
+    hist:{years:["FY21","FY22","FY23","FY24","FY25E"],revenue:[6000,7000,8000,9000,10000],ebitda:[1200,1400,1600,1800,2000],ebit:[900,1100,1300,1500,1700],pat:[600,750,900,1050,1200],debt:[2000,2000,2000,2000,2000],equity:[6000,7000,8000,9000,10000],cash:[800,900,1000,1100,1200]},
+    kpis:{evEbitda:12,pe:18,roce:14,roe:12,netDE:0.2,fcfYield:3.0,currentRatio:1.5,interestCover:6}}
+};
+
+/* ═══ State ═══ */
+let currentCo='reliance', histOverrides={}, isOverridden=false, tranches=[];
+
+/* ═══════════════════════════════════════════════════════════════
+   INIT + TAB + COMPANY LOADING
+   ═══════════════════════════════════════════════════════════════ */
+function init(){
+  const sel=el('company-select');
+  const groups={large:'── Large Cap ──',mid:'── Mid Cap ──',small:'── Small Cap ──'};
+  const byGroup={large:[],mid:[],small:[]};
+  Object.entries(COMPANIES).forEach(([k,v])=>{byGroup[v.cap]=byGroup[v.cap]||[];byGroup[v.cap].push([k,v]);});
+  ['large','mid','small'].forEach(g=>{
+    const og=document.createElement('optgroup');og.label=groups[g];
+    byGroup[g].forEach(([k,v])=>{const o=document.createElement('option');o.value=k;o.textContent=`${v.ticker} — ${v.name}`;og.appendChild(o);});
+    sel.appendChild(og);
+  });
+  sel.value='reliance';
+  loadCompany('reliance');
+}
+
+function showTab(tab){
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  el('tab-'+tab).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t=>{if(t.textContent.toLowerCase().replace(/\s/g,'')===tab||
+    (tab==='insights'&&t.textContent.toLowerCase()==='intelligence')||
+    (tab==='overview'&&t.textContent.toLowerCase()==='overview'))t.classList.add('active');});
+  // match tab text
+  const map={overview:'Overview',valuation:'Valuation',wacc:'WACC',risk:'Risk',financials:'Financials',insights:'Intelligence'};
+  document.querySelectorAll('.nav-tab').forEach(t=>{t.classList.toggle('active',t.textContent===map[tab]);});
+}
+
+function loadCompany(key){
+  currentCo=key;
+  const co=COMPANIES[key];
+  histOverrides={};isOverridden=false;
+  el('override-warning').style.display='none';
+  /* Company bar */
+  el('co-sector').textContent=co.sector.split('·')[0].trim();
+  el('co-cap').textContent=co.cap.toUpperCase()+' CAP';
+  el('co-cap').className='cap-badge cap-'+co.cap;
+  /* DCF inputs */
+  const d=co.dcf;
+  sv('i-baseRev',d.baseRev);sv('i-revGrowth',d.revGrowth);sv('i-ebitdaMargin',d.ebitdaMargin);sv('i-taxRate',d.taxRate);sv('i-da',d.da);sv('i-capex',d.capex);sv('i-nwcPct',d.nwcPct);sv('i-netDebt',d.netDebt);sv('i-shares',d.shares);sv('i-years',d.years);sv('i-wacc',d.wacc);sv('i-tgr',d.tgr);sv('i-exitMult',d.exitMult);
+  /* WACC inputs */
+  const w=co.wacc;
+  sv('w-rf',w.rf);sv('w-erp',w.erp);sv('w-beta',w.beta);sv('w-crp',w.crp);sv('w-size',w.size);
+  el('w-rating').value=w.rating;toggleKdManual();
+  sv('w-tax',w.tax);sv('w-equity-val',w.equityVal);sv('w-debt-val',w.debtVal);sv('w-interest',w.interest);
+  tranches=w.tranches.map(t=>({...t}));
+  renderTranches();
+  /* Risk inputs */
+  const r=co.risk;
+  sv('r-rawBeta',r.rawBeta);sv('r-de',r.de);sv('r-taxRate',r.taxRate);sv('r-rf',r.rf);sv('r-erp',r.erp);sv('r-alpha',r.alpha);sv('r-kd',r.kd);sv('r-we',r.we);sv('r-wd',r.wd);
+  /* Run all calcs */
+  renderOverview();calcDCF();calcWACC();calcRisk();renderFinancials();
+  /* Reset insights */
+  el('insight-idle').className='show';el('insight-loading').className='';el('insight-error').className='';el('insight-result').className='';el('insight-result').innerHTML='';
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   OVERVIEW TAB
+   ═══════════════════════════════════════════════════════════════ */
+function renderOverview(){
+  const co=COMPANIES[currentCo];
+  el('ov-company').textContent=co.name;
+  el('ov-ticker').textContent=co.ticker;
+  el('ov-sector-full').textContent=co.sector;
+  el('ov-mcap').textContent=co.mcap;
+  el('ov-ticker-leg').textContent=co.ticker;
+  const ret=co.ret1y;
+  el('ov-perf').textContent=(ret>=0?'+':'')+n1(ret*100)+'%';
+  el('ov-perf').style.color=ret>=0?'var(--mint)':'var(--red)';
+  /* Perf chart */
+  const stock=getStock(co.seed),bench=BENCH;
+  const sn=stock.map(v=>v/stock[0]),bn=bench.map(v=>v/bench[0]);
+  const all=[...sn,...bn],mn=Math.min(...all),mx=Math.max(...all);
+  const sx=i=>(i/(sn.length-1))*800, sy=v=>84-((v-mn)/(mx-mn||1))*80;
+  let sp='',bp='';sn.forEach((v,i)=>{sp+=(i?'L':'M')+sx(i)+','+sy(v);});bn.forEach((v,i)=>{bp+=(i?'L':'M')+sx(i)+','+sy(v);});
+  el('perf-svg').innerHTML=`<path d="${bp}" fill="none" stroke="#5a9ee0" stroke-width="1" opacity=".5"/><path d="${sp}" fill="none" stroke="#c9a84c" stroke-width="1.5"/>`;
+  /* KPI Row 1 */
+  const k=co.kpis,h=co.hist;
+  const latestRev=h.revenue[h.revenue.length-1],latestEbitda=h.ebitda[h.ebitda.length-1];
+  const margin=latestEbitda/latestRev;
+  el('ov-kpis-1').innerHTML=[
+    kpiCard('Revenue',cr(latestRev),h.years[h.years.length-1],'accent'),
+    kpiCard('EBITDA',cr(latestEbitda),`Margin ${n1(margin*100)}%`),
+    kpiCard('PAT',cr(h.pat[h.pat.length-1]),''),
+    kpiCard('EV/EBITDA',n1(k.evEbitda)+'x',''),
+    kpiCard('P/E',n1(k.pe)+'x','')
+  ].join('');
+  /* KPI Row 2 */
+  el('ov-kpis-2').innerHTML=[
+    kpiCard('RoCE',n1(k.roce)+'%',''),
+    kpiCard('RoE',n1(k.roe)+'%',''),
+    kpiCard('Net D/E',n2(k.netDE)+'x',k.netDE<0?'Net Cash':''),
+    kpiCard('FCF Yield',n1(k.fcfYield)+'%',''),
+    kpiCard('Current Ratio',n2(k.currentRatio)+'x',''),
+    kpiCard('Interest Cover',n1(k.interestCover)+'x',''),
+    kpiCard('1Y Return',(ret>=0?'+':'')+n1(ret*100)+'%','',ret>=0?'':'warn'),
+    kpiCard('Mkt Cap',co.mcap,'')
+  ].join('');
+}
+function kpiCard(label,value,sub,cls=''){
+  return`<div class="kpi ${cls}"><div class="kpi-label">${label}</div><div class="kpi-value">${value}</div>${sub?`<div class="kpi-sub">${sub}</div>`:''}</div>`;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DCF VALUATION ENGINE
+   ═══════════════════════════════════════════════════════════════ */
+function calcDCF(){
+  const baseRev=gv('i-baseRev'),g=gv('i-revGrowth')/100,em=gv('i-ebitdaMargin')/100,t=gv('i-taxRate')/100;
+  const da=gv('i-da'),capex=gv('i-capex'),nwcPct=gv('i-nwcPct')/100,wacc=gv('i-wacc')/100;
+  const tgr=gv('i-tgr')/100,exitMult=gv('i-exitMult'),netDebt=gv('i-netDebt'),shares=gv('i-shares');
+  const years=clamp(Math.round(gv('i-years')),3,10);
+  const proj=[];let pvSum=0;
+  for(let y=1;y<=years;y++){
+    const rev=baseRev*Math.pow(1+g,y);
+    const ebitda=rev*em;
+    const ebit=ebitda-da;
+    const nopat=ebit*(1-t);
+    const fcff=nopat+da-capex-rev*nwcPct;
+    const df=Math.pow(1+wacc,y);
+    const pv=fcff/df;
+    pvSum+=pv;
+    proj.push({y,g,rev,ebitda,ebit,nopat,fcff,pv});
+  }
+  /* Terminal value */
+  const lastFCFF=proj[proj.length-1].fcff;
+  const lastEBITDA=proj[proj.length-1].ebitda;
+  const tvGGM=(wacc>tgr)?lastFCFF*(1+tgr)/(wacc-tgr):0;
+  const tvExit=lastEBITDA*exitMult;
+  const tv=(tvGGM+tvExit)/2;
+  const pvTV=tv/Math.pow(1+wacc,years);
+  const ev=pvSum+pvTV;
+  const eqVal=ev-netDebt;
+  const pricePerShare=shares>0?eqVal/shares:0;
+  const tvPct=ev>0?pvTV/ev:0;
+  /* Render projection table */
+  const tbody=el('proj-tbody');tbody.innerHTML='';
+  proj.forEach(p=>{
+    tbody.innerHTML+=`<tr><td class="td-text">Year ${p.y}</td><td>${n1(g*100)}%</td><td>${cr(p.rev)}</td><td>${cr(p.ebitda)}</td><td>${cr(p.ebit)}</td><td>${cr(p.nopat)}</td><td class="td-mint">${cr(p.fcff)}</td><td class="td-gold">${cr(p.pv)}</td></tr>`;
+  });
+  tbody.innerHTML+=`<tr class="tr-total"><td>Terminal Value</td><td colspan="5" style="text-align:center;">GGM: ${cr(tvGGM)} · Exit: ${cr(tvExit)} · Blended: ${cr(tv)}</td><td>${cr(tv)}</td><td>${cr(pvTV)}</td></tr>`;
+  /* Live output */
+  el('dcf-output-rows').innerHTML=[
+    outRow('PV of FCFFs',cr(pvSum)),outRow('PV of Terminal Value',cr(pvTV)),outRow('Enterprise Value',cr(ev)),
+    outRow('(-) Net Debt',cr(netDebt)),outRow('Equity Value',cr(eqVal)),outRow('TV as % of EV',n1(tvPct*100)+'%')
+  ].join('');
+  el('dcf-price').textContent=pricePerShare>0?`₹${Math.round(pricePerShare).toLocaleString('en-IN')}`:'₹—';
+  /* Sensitivity table */
+  buildSensitivity(wacc,tgr,pricePerShare,proj,years,netDebt,shares,da,capex,baseRev,nwcPct,em,t,g);
+}
+function outRow(label,val){return`<div style="display:flex;justify-content:space-between;padding:4px 0;"><span class="mono" style="font-size:10px;color:var(--text-dim);">${label}</span><span class="mono" style="font-size:11px;color:var(--text-mid);">${val}</span></div>`;}
+
+function buildSensitivity(baseWacc,baseTgr,basePrice,proj,years,netDebt,shares,da,capex,baseRev,nwcPct,em,t,g){
+  const waccSteps=[-2,-1,0,1,2].map(d=>baseWacc+d*0.005);
+  const tgrSteps=[-2,-1,0,1,2].map(d=>baseTgr+d*0.005);
+  let html='<thead><tr><th>WACC \\ TGR</th>';
+  tgrSteps.forEach(tg=>html+=`<th>${(tg*100).toFixed(1)}%</th>`);
+  html+='</tr></thead><tbody>';
+  waccSteps.forEach(w=>{
+    html+=`<tr><td class="td-text">${(w*100).toFixed(1)}%</td>`;
+    tgrSteps.forEach(tg=>{
+      let pvS=0;
+      for(let y=1;y<=years;y++){
+        const rev=baseRev*Math.pow(1+g,y);const ebitda=rev*em;const ebit=ebitda-da;const nopat=ebit*(1-t);const fcff=nopat+da-capex-rev*nwcPct;pvS+=fcff/Math.pow(1+w,y);
+      }
+      const lastRev=baseRev*Math.pow(1+g,years);const lastEbitda=lastRev*em;const lastFCFF=(lastEbitda-da)*(1-t)+da-capex-lastRev*nwcPct;
+      const tvG=(w>tg)?lastFCFF*(1+tg)/(w-tg):0;const tvE=lastEbitda*(gv('i-exitMult'));
+      const tvB=(tvG+tvE)/2;const pvTV=tvB/Math.pow(1+w,years);const ev=pvS+pvTV;const eq=ev-netDebt;const p=shares>0?eq/shares:0;
+      const diff=basePrice>0?(p-basePrice)/basePrice:0;
+      let cls='';
+      if(Math.abs(w-baseWacc)<0.001&&Math.abs(tg-baseTgr)<0.001)cls='hc-base';
+      else if(diff>0.12)cls='hc-up2';else if(diff>0.04)cls='hc-up1';
+      else if(diff<-0.12)cls='hc-dn2';else if(diff<-0.04)cls='hc-dn1';
+      html+=`<td class="${cls}">₹${Math.round(p).toLocaleString('en-IN')}</td>`;
+    });
+    html+='</tr>';
+  });
+  html+='</tbody>';
+  el('sens-table').innerHTML=html;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   WACC ENGINE
+   ═══════════════════════════════════════════════════════════════ */
+function toggleKdManual(){el('kd-manual-wrap').style.display=el('w-rating').value==='manual'?'flex':'none';}
+
+function renderTranches(){
+  const tb=el('tranche-tbody');tb.innerHTML='';
+  tranches.forEach((t,i)=>{
+    tb.innerHTML+=`<tr><td style="text-align:left;">${t.name}</td><td>${t.amt.toLocaleString('en-IN')}</td><td>${n1(t.rate)}</td><td><button class="remove-tranche" onclick="removeTranche(${i})">✕</button></td></tr>`;
+  });
+}
+function addTranche(){tranches.push({name:'New Tranche',amt:10000,rate:8.0});renderTranches();calcWACC();}
+function removeTranche(i){tranches.splice(i,1);renderTranches();calcWACC();}
+
+function calcWACC(){
+  const rf=gv('w-rf'),erp=gv('w-erp'),beta=gv('w-beta'),crp=gv('w-crp'),size=gv('w-size');
+  const ke=rf+beta*erp+crp+size;
+  el('w-ke-out').textContent=n2(ke)+'%';
+  /* Kd */
+  const ratingVal=el('w-rating').value;
+  let kdPre;
+  if(ratingVal==='manual'){kdPre=gv('w-kd-manual');}
+  else{
+    const spread=parseFloat(ratingVal);kdPre=rf+spread;
+    /* Weight by tranches if available */
+    if(tranches.length>0){
+      let wSum=0,rSum=0;tranches.forEach(t=>{wSum+=t.amt;rSum+=t.amt*t.rate;});
+      if(wSum>0)kdPre=rSum/wSum;
+    }
+  }
+  const tax=gv('w-tax')/100;
+  const kdPost=kdPre*(1-tax);
+  el('w-kd-out').textContent=n2(kdPre)+'%';
+  el('w-kdat-out').textContent=n2(kdPost)+'%';
+  /* Weights */
+  const eqV=gv('w-equity-val'),debtV=gv('w-debt-val');
+  const total=eqV+debtV;
+  const we=total>0?eqV/total:1,wd=total>0?debtV/total:0;
+  el('w-we-disp').textContent=n1(we*100)+'%';
+  el('w-wd-disp').textContent=n1(wd*100)+'%';
+  /* Tax shield */
+  const interest=gv('w-interest');
+  el('w-taxshield-out').textContent=cr(interest*tax);
+  /* WACC */
+  const wacc=ke*we+kdPost*wd;
+  el('w-wacc-out').textContent=n2(wacc)+'%';
+  el('w-wacc-formula').textContent=`${n2(ke)}% × ${n1(we*100)}% + ${n2(kdPost)}% × ${n1(wd*100)}% = ${n2(wacc)}%`;
+  /* Sync to DCF */
+  sv('i-wacc',wacc.toFixed(1));
+  /* Bridge */
+  renderWACCBridge(rf,beta,erp,crp,size,ke,kdPre,kdPost,we,wd,wacc);
+}
+
+function renderWACCBridge(rf,beta,erp,crp,size,ke,kdPre,kdPost,we,wd,wacc){
+  const maxVal=Math.max(ke,kdPre,wacc,20);
+  const rows=[
+    {label:'Risk-Free Rate (Rf)',val:rf,color:'#5a9ee0'},
+    {label:`β × ERP (${n2(beta)} × ${n1(erp)}%)`,val:beta*erp,color:'#c9a84c'},
+    {label:'Country Risk Premium',val:crp,color:'#e8a020'},
+    {label:'Size Premium',val:size,color:'#2ecc8f'},
+    {label:'= Cost of Equity (Ke)',val:ke,color:'#c9a84c',bold:true},
+    {label:'Pre-Tax Kd',val:kdPre,color:'#5a9ee0'},
+    {label:'After-Tax Kd',val:kdPost,color:'#9aaab8'},
+    {label:`WACC (Ke×${n1(we*100)}% + Kd(1-t)×${n1(wd*100)}%)`,val:wacc,color:'#c9a84c',bold:true}
+  ];
+  el('wacc-bridge').innerHTML=rows.map(r=>`<div class="wacc-row"><span class="wacc-label"${r.bold?' style="color:var(--gold);font-weight:500;"':''}>${r.label}</span><div class="wacc-bar-t"><div class="wacc-bar-f" style="width:${(r.val/maxVal*100).toFixed(1)}%;background:${r.color};"></div></div><span class="wacc-val" style="color:${r.color};">${n2(r.val)}%</span></div>`).join('');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RISK ENGINE
+   ═══════════════════════════════════════════════════════════════ */
+function calcRisk(){
+  const co=COMPANIES[currentCo];
+  const stockPrices=getStock(co.seed);
+  const sr=rets(stockPrices),mr=rets(BENCH);
+  const regBeta=betaCalc(sr,mr);
+  el('r-regbeta').textContent=n2(regBeta);
+  const rawBeta=gv('r-rawBeta'),de=gv('r-de'),taxR=gv('r-taxRate')/100;
+  const alpha=gv('r-alpha'),rf=gv('r-rf'),erp=gv('r-erp'),kd=gv('r-kd'),we=gv('r-we')/100,wd=gv('r-wd')/100;
+  /* Beta decomposition */
+  const unlevBeta=rawBeta/(1+(1-taxR)*de);
+  const adjBeta=blumeAdj(rawBeta);
+  const relevBeta=unlevBeta*(1+(1-taxR)*de);
+  el('beta-output-rows').innerHTML=[
+    outRow('Unlevered Beta (Hamada)',n2(unlevBeta)),
+    outRow('Blume Adjusted Beta',n2(adjBeta)),
+    outRow('Re-Levered Beta',n2(relevBeta))
+  ].join('');
+  /* CAPM */
+  const keCAPM=rf+rawBeta*erp+alpha;
+  const waccR=keCAPM*we+kd*(1-taxR)*wd;
+  el('capm-output-rows').innerHTML=[
+    outRow('Ke (CAPM)',n2(keCAPM)+'%'),
+    outRow('Ke + α Adj',n2(keCAPM)+'%'),
+    outRow('WACC (Risk)',n2(waccR)+'%')
+  ].join('');
+  /* Risk metrics */
+  const vol=volCalc(sr),sharpe=sharpeCalc(sr),sortino=sortinoCalc(sr),mdd=maxDDCalc(stockPrices);
+  const var95=VaRCalc(sr,0.95),var99=VaRCalc(sr,0.99);
+  el('risk-metrics-grid').innerHTML=[
+    kpiCard('Annl. Volatility',pct(vol),'σ (daily ann.)'),
+    kpiCard('Sharpe Ratio',n2(sharpe),'Risk-adj return'),
+    kpiCard('Sortino Ratio',n2(sortino),'Downside-adj'),
+    kpiCard('Max Drawdown',pct(mdd),'Peak to trough','warn'),
+    kpiCard('VaR 95%',pct(var95),'1-day'),
+    kpiCard('VaR 99%',pct(var99),'1-day')
+  ].join('');
+  /* Ke decomposition bars */
+  const keTotal=rf+rawBeta*erp+alpha;
+  const maxKe=Math.max(keTotal,20);
+  const bars=[
+    {label:'Risk-Free Rate',val:rf,color:'#5a9ee0'},
+    {label:'Systematic Risk (β×ERP)',val:rawBeta*erp,color:'#c9a84c'},
+    {label:'Alpha / Size Premium',val:alpha,color:'#2ecc8f'}
+  ];
+  el('ke-bars').innerHTML=bars.map(b=>`<div class="wacc-row"><span class="wacc-label">${b.label}</span><div class="wacc-bar-t"><div class="wacc-bar-f" style="width:${(b.val/maxKe*100).toFixed(1)}%;background:${b.color};"></div></div><span class="wacc-val" style="color:${b.color};">${n2(b.val)}%</span></div>`).join('');
+  el('ke-total').textContent=n2(keTotal)+'%';
+  /* Volatility chart */
+  const window30=30;const volSeries=[];
+  for(let i=window30;i<sr.length;i++){const slice=sr.slice(i-window30,i);volSeries.push(volCalc(slice));}
+  const volMin=Math.min(...volSeries),volMax=Math.max(...volSeries);
+  let volPath='';volSeries.forEach((v,i)=>{const x=(i/(volSeries.length-1))*600,y=70-((v-volMin)/(volMax-volMin||1))*65;volPath+=(i?'L':'M')+x+','+y;});
+  el('vol-svg').innerHTML=`<path d="${volPath}" fill="none" stroke="#e8a020" stroke-width="1.5"/>`;
+  el('vol-current').textContent=pct(volSeries[volSeries.length-1]);
+  /* Return distribution */
+  const bins=20,binW=0.1/bins;const counts=new Array(bins).fill(0);
+  sr.forEach(r=>{const idx=clamp(Math.floor((r+0.05)/binW),0,bins-1);counts[idx]++;});
+  const maxCount=Math.max(...counts);
+  el('ret-dist').innerHTML=counts.map((c,i)=>{
+    const h=maxCount>0?(c/maxCount)*60:0;
+    const frac=i/bins;
+    const color=frac<0.3?'var(--red)':frac>0.7?'var(--mint)':'var(--text-dim)';
+    return`<div style="flex:1;height:${h}px;background:${color};border-radius:1px;opacity:0.7;"></div>`;
+  }).join('');
+  /* Comparable companies */
+  renderComps(unlevBeta,de,taxR,rf,erp);
+  /* Ke sensitivity */
+  buildKeSensitivity(rf,rawBeta,erp,alpha);
+}
+
+function renderComps(targetUnlev,targetDE,taxR,rf,erp){
+  const comps=[
+    {name:'TCS',rawB:0.68,de:0.01},{name:'Infosys',rawB:0.72,de:0.01},{name:'HDFC Bank',rawB:1.05,de:8.2},
+    {name:'ICICI Bank',rawB:1.12,de:7.8},{name:'Airtel',rawB:0.88,de:0.28},{name:'L&T',rawB:0.98,de:0.12},
+    {name:'Sun Pharma',rawB:0.78,de:0.02},{name:'Tata Motors',rawB:1.35,de:0.44}
+  ];
+  const co=COMPANIES[currentCo];
+  const filtered=comps.filter(c=>c.name!==co.name.split(' ')[0]);
+  const tb=el('comp-tbody');tb.innerHTML='';
+  const unlevs=[];
+  filtered.forEach(c=>{
+    const ub=c.rawB/(1+(1-taxR)*c.de);
+    unlevs.push(ub);
+    const rl=ub*(1+(1-taxR)*targetDE);
+    const ke=rf+rl*erp;
+    tb.innerHTML+=`<tr><td class="td-text">${c.name}</td><td>${n2(c.rawB)}</td><td>${n2(c.de)}</td><td class="td-blue">${n2(ub)}</td><td class="td-gold">${n2(rl)}</td><td>${n2(ke)}%</td></tr>`;
+  });
+  const medUB=unlevs.sort((a,b)=>a-b)[Math.floor(unlevs.length/2)];
+  const medRL=medUB*(1+(1-taxR)*targetDE);
+  const medKe=rf+medRL*erp;
+  tb.innerHTML+=`<tr class="tr-total"><td>Median</td><td>—</td><td>—</td><td>${n2(medUB)}</td><td>${n2(medRL)}</td><td>${n2(medKe)}%</td></tr>`;
+}
+
+function buildKeSensitivity(rf,rawBeta,erp,alpha){
+  const betaSteps=[-0.2,-0.1,0,0.1,0.2].map(d=>rawBeta+d);
+  const erpSteps=[-1.0,-0.5,0,0.5,1.0].map(d=>erp+d);
+  let html='<thead><tr><th>Beta \\ ERP</th>';
+  erpSteps.forEach(e=>html+=`<th>${n1(e)}%</th>`);html+='</tr></thead><tbody>';
+  betaSteps.forEach(b=>{
+    html+=`<tr><td class="td-text">${n2(b)}</td>`;
+    erpSteps.forEach(e=>{
+      const ke=rf+b*e+alpha;
+      const isBase=Math.abs(b-rawBeta)<0.01&&Math.abs(e-erp)<0.01;
+      html+=`<td class="${isBase?'hc-base':''}">${n2(ke)}%</td>`;
+    });
+    html+='</tr>';
+  });
+  html+='</tbody>';
+  el('ke-sens-table').innerHTML=html;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FINANCIALS TAB
+   ═══════════════════════════════════════════════════════════════ */
+function renderFinancials(){
+  const co=COMPANIES[currentCo];
+  const h=co.hist;
+  /* Revenue chart */
+  renderBarChart('rev-chart-wrap',h.years,h.revenue,'#5a9ee0');
+  renderBarChart('ebitda-chart-wrap',h.years,h.ebitda,'#c9a84c');
+  /* CAGR */
+  const revCAGR=h.revenue.length>1?Math.pow(h.revenue[h.revenue.length-1]/h.revenue[0],1/(h.revenue.length-1))-1:0;
+  const ebitdaCAGR=h.ebitda.length>1?Math.pow(h.ebitda[h.ebitda.length-1]/h.ebitda[0],1/(h.ebitda.length-1))-1:0;
+  el('rev-cagr').textContent=n1(revCAGR*100)+'%';
+  el('ebitda-cagr').textContent=n1(ebitdaCAGR*100)+'%';
+  /* P&L table */
+  const fields=[
+    {key:'revenue',label:'Revenue'},{key:'ebitda',label:'EBITDA'},{key:'ebit',label:'EBIT'},{key:'pat',label:'PAT'}
+  ];
+  let plHtml='<thead><tr><th style="text-align:left;">Metric</th>';
+  h.years.forEach(y=>plHtml+=`<th>${y}</th>`);plHtml+='</tr></thead><tbody>';
+  fields.forEach(f=>{
+    plHtml+=`<tr><td class="td-text">${f.label}</td>`;
+    h[f.key].forEach((v,i)=>{
+      const oKey=`${f.key}_${i}`;const ov=histOverrides[oKey];const val=ov!==undefined?ov:v;
+      const modified=ov!==undefined&&ov!==v;
+      plHtml+=`<td><input class="editable-cell${modified?' cell-modified':''}" type="number" value="${val}" data-field="${f.key}" data-idx="${i}" data-orig="${v}" onchange="onCellEdit(this)" onfocus="this.select()"/></td>`;
+    });
+    plHtml+='</tr>';
+  });
+  /* Margins row */
+  plHtml+=`<tr><td class="td-text" style="color:var(--text-dim);">EBITDA Margin</td>`;
+  h.years.forEach((_,i)=>{
+    const rev=histOverrides[`revenue_${i}`]||h.revenue[i];
+    const ebitda=histOverrides[`ebitda_${i}`]||h.ebitda[i];
+    plHtml+=`<td style="color:var(--gold-dim);">${rev>0?n1(ebitda/rev*100):'—'}%</td>`;
+  });
+  plHtml+='</tr>';
+  /* PAT Margin */
+  plHtml+=`<tr><td class="td-text" style="color:var(--text-dim);">PAT Margin</td>`;
+  h.years.forEach((_,i)=>{
+    const rev=histOverrides[`revenue_${i}`]||h.revenue[i];
+    const pat=histOverrides[`pat_${i}`]||h.pat[i];
+    plHtml+=`<td style="color:var(--text-dim);">${rev>0?n1(pat/rev*100):'—'}%</td>`;
+  });
+  plHtml+='</tr></tbody>';
+  el('pl-table').innerHTML=plHtml;
+  /* BS KPIs */
+  const k=co.kpis;
+  el('bs-kpis').innerHTML=[
+    kpiCard('Total Debt (Latest)',cr(h.debt[h.debt.length-1]),''),
+    kpiCard('Total Equity',cr(h.equity[h.equity.length-1]),''),
+    kpiCard('Cash & Equivalents',cr(h.cash[h.cash.length-1]),''),
+    kpiCard('Net D/E',n2(k.netDE)+'x',k.netDE<0?'Net Cash':''),
+    kpiCard('RoCE',n1(k.roce)+'%',''),
+    kpiCard('RoE',n1(k.roe)+'%',''),
+    kpiCard('Current Ratio',n2(k.currentRatio)+'x',''),
+    kpiCard('Interest Cover',n1(k.interestCover)+'x','')
+  ].join('');
+}
+
+function renderBarChart(wrapId,labels,data,color){
+  const wrap=el(wrapId);const mx=Math.max(...data.map(Math.abs));
+  wrap.innerHTML=`<div style="display:flex;align-items:flex-end;gap:6px;height:60px;">${data.map((v,i)=>{
+    const h=mx>0?(Math.abs(v)/mx)*55:0;
+    return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;"><div style="width:100%;height:${h}px;background:${color};border-radius:3px 3px 0 0;opacity:${0.5+i*0.12};transition:height .3s;"></div><span class="mono" style="font-size:8px;color:var(--text-dim);">${labels[i]}</span></div>`;
+  }).join('')}</div>`;
+}
+
+function onCellEdit(input){
+  const field=input.dataset.field,idx=parseInt(input.dataset.idx),orig=parseFloat(input.dataset.orig);
+  const val=parseFloat(input.value);
+  if(isNaN(val))return;
+  const key=`${field}_${idx}`;
+  if(val!==orig){histOverrides[key]=val;input.classList.add('cell-modified');isOverridden=true;el('override-warning').style.display='block';}
+  else{delete histOverrides[key];input.classList.remove('cell-modified');isOverridden=Object.keys(histOverrides).length>0;el('override-warning').style.display=isOverridden?'block':'none';}
+}
+function resetFinancials(){histOverrides={};isOverridden=false;el('override-warning').style.display='none';renderFinancials();}
+
+/* ═══════════════════════════════════════════════════════════════
+   INTELLIGENCE — Rule-Based Local Engine
+   ═══════════════════════════════════════════════════════════════ */
+function generateInsights(){
+  el('insight-idle').className='';el('insight-loading').className='show';el('insight-error').className='';el('insight-result').className='';
+  setTimeout(()=>{
+    try{
+      const ins=buildInsights();
+      el('insight-loading').className='';
+      el('insight-result').className='show';
+      el('insight-result').innerHTML=renderInsight(ins);
+    }catch(e){
+      console.error(e);
+      el('insight-loading').className='';el('insight-error').className='show';
+    }
+  },1200);
+}
+
+function buildInsights(){
+  const co=COMPANIES[currentCo];const k=co.kpis,h=co.hist,d=co.dcf;
+  const wacc=gv('i-wacc'),tgr=gv('i-tgr'),g=gv('i-revGrowth'),em=gv('i-ebitdaMargin');
+  /* DCF price */
+  const baseRev=gv('i-baseRev'),shares=gv('i-shares'),netDebt=gv('i-netDebt');
+  const years=clamp(Math.round(gv('i-years')),3,10);
+  let pvS=0;for(let y=1;y<=years;y++){const rev=baseRev*Math.pow(1+g/100,y);const ebitda=rev*em/100;const ebit=ebitda-gv('i-da');const nopat=ebit*(1-gv('i-taxRate')/100);const fcff=nopat+gv('i-da')-gv('i-capex')-rev*gv('i-nwcPct')/100;pvS+=fcff/Math.pow(1+wacc/100,y);}
+  const lastRev=baseRev*Math.pow(1+g/100,years);const lastEbitda=lastRev*em/100;const lastFCFF=(lastEbitda-gv('i-da'))*(1-gv('i-taxRate')/100)+gv('i-da')-gv('i-capex')-lastRev*gv('i-nwcPct')/100;
+  const tvG=(wacc/100>tgr/100)?lastFCFF*(1+tgr/100)/(wacc/100-tgr/100):0;const tvE=lastEbitda*gv('i-exitMult');const tv=(tvG+tvE)/2;const pvTV=tv/Math.pow(1+wacc/100,years);
+  const ev=pvS+pvTV;const eqVal=ev-netDebt;const price=shares>0?eqVal/shares:0;
+  const tvPct=ev>0?pvTV/ev:0;
+  /* Stock metrics */
+  const stockPrices=getStock(co.seed);const sr=rets(stockPrices);
+  const vol=volCalc(sr),sharpe=sharpeCalc(sr),mdd=maxDDCalc(stockPrices);
+  /* Rating */
+  const upside=price>0?(price/(price*0.85)-1):0; // simplified
+  let rating='HOLD',ratingColor='var(--amber)';
+  if(k.fcfYield>3&&k.roce>15&&sharpe>0.5){rating='BUY';ratingColor='var(--mint)';}
+  else if(k.fcfYield<1.5||k.roce<8||mdd>0.3){rating='SELL';ratingColor='var(--red)';}
+  /* Build commentary */
+  const bulls=[],bears=[],flags=[];
+  if(g>10)bulls.push(`Strong revenue momentum at ${n1(g)}% growth, above sector median`);
+  if(em>20)bulls.push(`Healthy EBITDA margins of ${n1(em)}%, indicating operating leverage`);
+  if(k.roce>20)bulls.push(`Superior capital efficiency with RoCE of ${n1(k.roce)}%`);
+  if(k.fcfYield>3)bulls.push(`Attractive FCF yield of ${n1(k.fcfYield)}% supports dividend capacity`);
+  if(k.currentRatio>1.5)bulls.push(`Strong liquidity position (Current Ratio ${n2(k.currentRatio)}x)`);
+  if(k.netDE<0)bulls.push(`Net cash position (Net D/E ${n2(k.netDE)}x) provides strategic optionality`);
+  if(g<8)bears.push(`Revenue growth of ${n1(g)}% trails sector growth expectations`);
+  if(em<15)bears.push(`Thin margins (${n1(em)}%) leave limited buffer against cost inflation`);
+  if(k.netDE>0.5)bears.push(`Elevated leverage (Net D/E ${n2(k.netDE)}x) increases financial risk`);
+  if(k.pe>40)bears.push(`Rich valuation at ${n1(k.pe)}x P/E limits upside potential`);
+  if(wacc>13)bears.push(`High WACC (${n1(wacc)}%) suggests elevated risk perception`);
+  if(k.interestCover<4)bears.push(`Thin interest coverage (${n1(k.interestCover)}x) raises debt servicing concerns`);
+  if(tvPct>0.65)flags.push(`Terminal value accounts for ${n1(tvPct*100)}% of EV — high sensitivity to long-term assumptions`);
+  if(mdd>0.2)flags.push(`Max drawdown of ${n1(mdd*100)}% in past year signals elevated volatility risk`);
+  if(sharpe<0.5)flags.push(`Sharpe Ratio of ${n2(sharpe)} — risk-adjusted returns below institutional threshold`);
+  if(k.currentRatio<0.8)flags.push(`Current Ratio below 0.8x — potential working capital stress`);
+
+  return{co,rating,ratingColor,price,wacc,tgr,g,em,vol,sharpe,mdd,tvPct,bulls:bulls.slice(0,4),bears:bears.slice(0,4),flags:flags.slice(0,3),k};
+}
+
+function renderInsight(ins){
+  const {co,rating,ratingColor,price,wacc,tgr,g,em,vol,sharpe,mdd,tvPct,bulls,bears,flags,k}=ins;
+  return`<div class="fade-in">
+  <div style="display:flex;gap:16px;margin-bottom:20px;">
+    <div class="panel" style="flex:1;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div><div class="serif" style="font-size:24px;font-weight:700;color:var(--text);">${co.name}</div><div class="mono" style="font-size:10px;color:var(--text-dim);margin-top:4px;">DealStudio Intelligence Report · ${new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</div></div>
+        <div style="text-align:center;padding:12px 20px;background:${rating==='BUY'?'rgba(46,204,143,.08)':rating==='SELL'?'rgba(224,90,90,.08)':'rgba(232,160,32,.08)'};border:1px solid ${ratingColor};border-radius:6px;">
+          <div class="serif" style="font-size:28px;font-weight:700;color:${ratingColor};">${rating}</div>
+          <div class="mono" style="font-size:9px;color:var(--text-dim);margin-top:2px;">RATING</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px;">
+        ${[{l:'Intrinsic Value',v:`₹${Math.round(price).toLocaleString('en-IN')}`},{l:'WACC',v:n1(wacc)+'%'},{l:'Rev Growth',v:n1(g)+'%'},{l:'EBITDA Margin',v:n1(em)+'%'},{l:'Volatility',v:pct(vol)},{l:'Sharpe',v:n2(sharpe)}].map(x=>`<div style="padding:8px 12px;background:var(--panel-hi);border:1px solid var(--border);border-radius:4px;"><div class="mono" style="font-size:8px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;">${x.l}</div><div class="mono" style="font-size:13px;color:var(--text);margin-top:2px;">${x.v}</div></div>`).join('')}
+      </div>
+    </div>
+  </div>
+  <div class="grid-2" style="margin-bottom:16px;">
+    <div class="panel" style="border-color:rgba(46,204,143,.2);">
+      <div class="rule" style="margin-top:0;"><span class="label" style="color:var(--mint);">Bull Case</span><div class="rule-line"></div></div>
+      ${bulls.map((b,i)=>`<div style="padding:6px 0;border-bottom:1px solid rgba(30,42,53,.3);"><span class="mono" style="font-size:10px;color:var(--mint-dim);margin-right:8px;">${i+1}.</span><span class="mono" style="font-size:11px;color:var(--text-mid);">${b}</span></div>`).join('')}
+    </div>
+    <div class="panel" style="border-color:rgba(224,90,90,.2);">
+      <div class="rule" style="margin-top:0;"><span class="label" style="color:var(--red);">Bear Case</span><div class="rule-line"></div></div>
+      ${bears.map((b,i)=>`<div style="padding:6px 0;border-bottom:1px solid rgba(30,42,53,.3);"><span class="mono" style="font-size:10px;color:var(--red-dim);margin-right:8px;">${i+1}.</span><span class="mono" style="font-size:11px;color:var(--text-mid);">${b}</span></div>`).join('')}
+    </div>
+  </div>
+  ${flags.length?`<div class="panel" style="border-color:rgba(232,160,32,.3);margin-bottom:16px;">
+    <div class="rule" style="margin-top:0;"><span class="label" style="color:var(--amber);">⚠ Red Flags & Monitorables</span><div class="rule-line"></div></div>
+    ${flags.map(f=>`<div style="padding:5px 0;"><span class="mono" style="font-size:11px;color:var(--amber);">• ${f}</span></div>`).join('')}
+  </div>`:''}
+  <div class="panel">
+    <div class="rule" style="margin-top:0;"><span class="label accent">Quant Scorecard</span><div class="rule-line"></div></div>
+    <div class="grid-4">
+      ${[{l:'EV/EBITDA',v:n1(k.evEbitda)+'x'},{l:'P/E',v:n1(k.pe)+'x'},{l:'RoCE',v:n1(k.roce)+'%'},{l:'RoE',v:n1(k.roe)+'%'},{l:'FCF Yield',v:n1(k.fcfYield)+'%'},{l:'Max DD',v:pct(mdd)},{l:'TV/EV',v:n1(tvPct*100)+'%'},{l:'Net D/E',v:n2(k.netDE)+'x'}].map(x=>`<div style="padding:8px 10px;background:var(--panel-hi);border:1px solid var(--border);border-radius:4px;"><div class="mono" style="font-size:8px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;">${x.l}</div><div class="mono" style="font-size:14px;color:var(--text);margin-top:3px;">${x.v}</div></div>`).join('')}
+    </div>
+  </div>
+  </div>`;
+}
+
+/* ═══ BOOT ═══ */
+init();
+</script>
+</body>
+</html>
